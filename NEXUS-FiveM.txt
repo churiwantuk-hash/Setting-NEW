@@ -1,0 +1,1098 @@
+<#
+==========================================================================================
+  NEXUS FiveM Optimizer (สคริปต์ไฟล์เดียว ใช้ได้กับ Windows 10 / 11 ทุกเครื่อง)
+==========================================================================================
+
+  วิธีใช้ (ไม่ต้องติดตั้งอะไร)
+  ------------------------------
+  เปิด PowerShell แบบ Run as administrator (กด Windows > พิมพ์ PowerShell > คลิกขวา)
+  (ไม่เปิดแบบ admin ก็ใช้ได้ แต่ข้อที่ต้องใช้สิทธิ์ admin เช่น HAGS จะถูกข้าม)
+
+  แบบ A: รันจากเว็บ หลังอัปโหลดไฟล์นี้ขึ้น GitHub แล้ว ให้ใช้ลิงก์ Raw:
+
+     [Net.ServicePointManager]::SecurityProtocol='Tls12'; iwr -useb "https://raw.githubusercontent.com/<ชื่อ>/<repo>/main/NEXUS-FiveM.txt" | iex
+
+     (irm ... | iex ก็ใช้ได้เหมือนกัน)
+     โค้ดในไฟล์เก็บภาษาไทยเป็นรหัส \u0E.. เพื่อให้ iwr | iex แสดงภาษาไทยได้ถูกต้อง ห้ามแก้รหัสเหล่านี้ด้วยมือ
+
+  แบบ B: รันจากไฟล์ในเครื่อง (วางไฟล์ไว้ใน Downloads):
+
+     iex (Get-Content "$env:USERPROFILE\Downloads\NEXUS-FiveM.txt" -Raw -Encoding UTF8)
+
+  เมนูในโปรแกรม
+  -------------
+  1 = สแกนเครื่อง (อ่านอย่างเดียว ไม่เปลี่ยนอะไร)
+  2 = ปรับดีที่สุดอัตโนมัติ (แนะนำ): เลือกโปรไฟล์ตามสเปคเครื่องให้เอง > ให้ดูก่อน > กดยืนยัน
+  3 = เลือกโปรไฟล์เอง (LOW / MEDIUM / HIGH / MAX)
+  4 = กู้คืนค่าเดิมจาก backup
+  5 = วัดประสิทธิภาพ 30 วินาทีระหว่างเล่น (CPU / GPU / RAM)
+  6 = ล้าง cache ของ FiveM (ถามยืนยันก่อน)
+  7 = ดูโปรแกรมที่แย่ง RAM / CPU
+  8 = โหมดโหดสุด (คนเยอะ / ไฟต์): ลดภาระ CPU ให้มากที่สุด + ภาพชัด + ปิดโปรแกรมแย่ง RAM (ถามก่อน)
+      + เปิด Memory Compression ของ Windows กลับมา (โปรแกรม tweak ชอบปิดไว้ ทำให้กระตุกตอน RAM เต็ม)
+  9 = RUN ALL: ทำทุกอย่างในครั้งเดียว เลือกระดับ LOW / MEDIUM / MAX แล้วยืนยันแค่ครั้งเดียว
+  Enter เฉยๆ = RUN ALL
+
+  เข้า RUN ALL ทันทีโดยไม่ต้องผ่านเมนู:
+     $NexusRunAll=1; [Net.ServicePointManager]::SecurityProtocol='Tls12'; iwr -useb "<ลิงก์ Raw>" | iex
+
+  ใช้ได้กับทุกสเปค: Windows 10/11, การ์ดจอ NVIDIA / AMD / Intel, คอมตั้งโต๊ะ / โน้ตบุ๊ก
+  ข้อไหนที่เครื่องไม่รองรับจะถูกข้ามและบอกเหตุผลให้
+  ถ้าภาษาไทยขึ้นเป็นกล่องสี่เหลี่ยม (Windows ภาษาอังกฤษ) ให้เปิดใน Windows Terminal หรือ PowerShell ISE แทน
+
+  เรื่องยิงหัว/ตีหัว: สคริปต์นี้ไม่แก้ดาเมจ hitbox หรือช่วยเล็ง (นั่นคือโกง โดนแบน)
+  ที่ช่วยได้จริงคือเฟรมนิ่ง เมาส์ 1:1 ไม่มีภาพเบลอ และไม่มีหญ้าบังตัวคน ซึ่งโหมด 2 และ 8 ทำให้แล้ว
+
+  ข้อตกลงการใช้งาน
+  ----------------
+  - สคริปต์นี้ปรับค่าของ Windows และค่ากราฟิกของ GTA V / FiveM บนเครื่องของผู้ใช้ ตามที่ผู้ใช้กดยืนยันเท่านั้น
+  - ผลที่ได้ (FPS / ความลื่น) ขึ้นกับสเปคเครื่อง เซิร์ฟ และจำนวนผู้เล่น ไม่รับประกันว่าจะเพิ่มเป็นตัวเลขเท่าใด
+  - ทุกการเปลี่ยนแปลงสำรองค่าเดิมไว้ และกู้คืนได้ด้วยเมนู 4
+  - ไม่ใช่โปรแกรมโกง: ไม่แก้ไฟล์เกม ไม่แก้ดาเมจ/hitbox ไม่ช่วยเล็ง ไม่ยุ่งกับ anti-cheat ของ FiveM
+  - ผู้ใช้ยอมรับความเสี่ยงในการปรับแต่งเครื่องเอง
+
+  ความปลอดภัย
+  -----------
+  - ไฟล์ backup อยู่ที่  Downloads\NEXUS-FiveM-Backups\  และกู้คืนได้ทุกเมื่อด้วยเมนู 3
+  - ไม่ปิด Windows Defender / Windows Update / service ของระบบ ไม่ยุ่งกับ BIOS ไม่ Overclock
+  - ไม่แตะไฟล์เกม ไม่แก้ดาเมจหรือ hitbox ไม่ยุ่งกับ anti-cheat
+  - ค่ากราฟิกของเกมต้องปิด FiveM ก่อนถึงจะปรับได้ (ตอนปิดเกม FiveM จะเขียนทับไฟล์ settings)
+  - ไม่มีการโหลดอะไรจากเน็ต และไม่ส่งข้อมูลออกไปไหน
+  - ไม่มีโปรแกรมไหนเพิ่ม FPS ได้แน่นอน ผลจริงขึ้นกับเครื่อง เซิร์ฟ และจำนวนคนในเซิร์ฟ
+
+  หมายเหตุ: ต้องเซฟไฟล์นี้เป็น UTF-8 แบบ "ไม่มี BOM" ไม่อย่างนั้น iwr | iex จะ error
+==========================================================================================
+#>
+
+& {
+$ErrorActionPreference = 'Stop'
+$Version = '1.1'
+$Inv = [Globalization.CultureInfo]::InvariantCulture
+
+# Test hooks: NEXUS_SANDBOX = folder -> registry writes go to HKCU\Software\NexusFiveM.Tests and the game file to a copy.
+$Sandbox = $env:NEXUS_SANDBOX
+$AutoAction = $env:NEXUS_ACTION
+
+# ------------------------------------------------------------------ native helpers
+if (-not ('NexusNative' -as [type])) {
+    Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public static class NexusNative {
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct DEVMODE {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string dmDeviceName;
+        public short dmSpecVersion, dmDriverVersion, dmSize, dmDriverExtra;
+        public int dmFields, dmPositionX, dmPositionY, dmDisplayOrientation, dmDisplayFixedOutput;
+        public short dmColor, dmDuplex, dmYResolution, dmTTOption, dmCollate;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string dmFormName;
+        public short dmLogPixels;
+        public int dmBitsPerPel, dmPelsWidth, dmPelsHeight, dmDisplayFlags, dmDisplayFrequency;
+        public int dmICMMethod, dmICMIntent, dmMediaType, dmDitherType, dmReserved1, dmReserved2, dmPanningWidth, dmPanningHeight;
+    }
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern bool EnumDisplaySettingsW(string d, int m, ref DEVMODE dm);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int ChangeDisplaySettingsExW(string d, ref DEVMODE dm, IntPtr h, uint f, IntPtr l);
+    [DllImport("user32.dll", SetLastError = true)] static extern bool SystemParametersInfoW(uint a, uint p, [In, Out] int[] v, uint w);
+    static DEVMODE NewMode() { DEVMODE d = new DEVMODE(); d.dmDeviceName = ""; d.dmFormName = ""; d.dmSize = (short)Marshal.SizeOf(typeof(DEVMODE)); return d; }
+    public static int[] Current() { DEVMODE d = NewMode(); if (!EnumDisplaySettingsW(null, -1, ref d)) return null; return new int[] { d.dmPelsWidth, d.dmPelsHeight, d.dmDisplayFrequency }; }
+    public static int MaxRefresh(int w, int h) {
+        int max = 0;
+        for (int i = 0; ; i++) {
+            DEVMODE d = NewMode();
+            if (!EnumDisplaySettingsW(null, i, ref d)) break;
+            if (d.dmPelsWidth == w && d.dmPelsHeight == h && d.dmBitsPerPel >= 32 && d.dmDisplayFrequency > max) max = d.dmDisplayFrequency;
+        }
+        return max;
+    }
+    public static int SetRefresh(int hz) {
+        DEVMODE d = NewMode();
+        if (!EnumDisplaySettingsW(null, -1, ref d)) return -100;
+        d.dmDisplayFrequency = hz; d.dmFields = 0x400000;
+        int r = ChangeDisplaySettingsExW(null, ref d, IntPtr.Zero, 2, IntPtr.Zero);
+        if (r != 0) return r;
+        return ChangeDisplaySettingsExW(null, ref d, IntPtr.Zero, 1, IntPtr.Zero);
+    }
+    public static string GetMouse() { int[] p = new int[3]; SystemParametersInfoW(3, 0, p, 0); return p[0] + "," + p[1] + "," + p[2]; }
+    public static bool SetMouse(int a, int b, int c) { return SystemParametersInfoW(4, 0, new int[] { a, b, c }, 3); }
+}
+'@
+}
+
+# ------------------------------------------------------------------ output helpers
+# Thai text is stored as \u0E.. escapes so the file stays pure ASCII: "iwr | iex" on Windows PowerShell 5.1 turns
+# every non-ASCII character into '?'. U() turns the escapes back into Thai right before display.
+function U([string]$s) { return [regex]::Replace($s, '\\u([0-9A-F]{4})', { param($m) [string][char][Convert]::ToInt32($m.Groups[1].Value, 16) }) }
+function Say([string]$text, [string]$color = 'Gray') { Write-Host (U $text) -ForegroundColor $color }
+function Head([string]$text) { Write-Host ''; Write-Host ('=== ' + (U $text) + ' ') -ForegroundColor Cyan }
+function Ask([string]$q) { if ($AutoAction) { return 'y' } return (Read-Host (U $q)) }
+function RH([string]$q) { return (Read-Host (U $q)) }
+
+$IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+function Get-DownloadsDir {
+    try { $p = (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path; if ($p -and (Test-Path $p)) { return $p } } catch { }
+    return (Join-Path $env:USERPROFILE 'Downloads')
+}
+if ($Sandbox) { $BackupDir = Join-Path $Sandbox 'backups' } else { $BackupDir = Join-Path (Get-DownloadsDir) 'NEXUS-FiveM-Backups' }
+
+# ------------------------------------------------------------------ FiveM paths
+$FiveMRoot = Join-Path $env:LOCALAPPDATA 'FiveM'
+$FiveMData = Join-Path $FiveMRoot 'FiveM.app\data'
+$GtaXml = Join-Path $env:APPDATA 'CitizenFX\gta5_settings.xml'
+if ($Sandbox) {
+    $copy = Join-Path $Sandbox 'gta5_settings.xml'
+    if (-not (Test-Path $copy) -and (Test-Path $GtaXml)) { Copy-Item $GtaXml $copy }
+    $GtaXml = $copy
+}
+
+function Test-FiveMRunning {
+    if ($Sandbox) { return $false }
+    return [bool](Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'FiveM' -or $_.Name -like '*_GTAProcess' })
+}
+
+function Get-FiveMExes {
+    $list = @()
+    $l = Join-Path $FiveMRoot 'FiveM.exe'
+    if (Test-Path $l) { $list += $l }
+    $sub = Join-Path $FiveMData 'cache\subprocess'
+    if (Test-Path $sub) { $list += @(Get-ChildItem $sub -Filter '*GTAProcess.exe' | ForEach-Object { $_.FullName }) }
+    return $list
+}
+
+# ------------------------------------------------------------------ hardware detection
+function Get-Hardware {
+    $cpu = (Get-CimInstance Win32_Processor | Select-Object -First 1)
+    $os = Get-CimInstance Win32_OperatingSystem
+    $ramGb = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 1)
+
+    # VRAM from the display class registry key (Win32_VideoController caps at 4 GB)
+    $vramByName = @{}
+    $cls = 'HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}'
+    Get-ChildItem $cls -ErrorAction SilentlyContinue | Where-Object { $_.PSChildName -match '^\d{4}$' } | ForEach-Object {
+        try {
+            $k = Get-ItemProperty $_.PSPath -ErrorAction Stop
+            $q = $k.'HardwareInformation.qwMemorySize'
+            if (-not $q) {
+                # Older drivers store a DWORD or 4-byte binary instead of the 64-bit value
+                $m = $k.'HardwareInformation.MemorySize'
+                if ($m -is [byte[]] -and $m.Length -ge 4) { $q = [BitConverter]::ToUInt32($m, 0) } elseif ($m) { $q = [uint32]$m }
+            }
+            if ($k.DriverDesc -and $q) { $vramByName[$k.DriverDesc] = [math]::Round([double]$q / 1GB, 1) }
+        } catch { }
+    }
+    $gpus = @()
+    foreach ($v in (Get-CimInstance Win32_VideoController)) {
+        $pci = [string]$v.PNPDeviceID -like 'PCI\*'
+        $vendor = 'Other'
+        if ($v.PNPDeviceID -match 'VEN_10DE') { $vendor = 'NVIDIA' } elseif ($v.PNPDeviceID -match 'VEN_1002') { $vendor = 'AMD' } elseif ($v.PNPDeviceID -match 'VEN_8086') { $vendor = 'Intel' }
+        $vram = 0
+        if ($vramByName.ContainsKey($v.Name)) { $vram = $vramByName[$v.Name] } elseif ($v.AdapterRAM) { $vram = [math]::Round([double]$v.AdapterRAM / 1GB, 1) }
+        # Integrated GPUs: Intel UHD/Iris (not Arc), AMD APU graphics (Radeon Graphics, Vega 8, 680M/780M/890M...)
+        $amdIgpu = $v.Name -match 'Radeon\(TM\) Graphics|Radeon Graphics|Vega \d+|Radeon\(TM\) \d{3}M|Radeon \d{3}M'
+        $integrated = $pci -and (($vendor -eq 'Intel' -and $v.Name -notmatch 'Arc') -or ($vendor -eq 'AMD' -and ($amdIgpu -or ($vram -lt 2 -and $v.Name -notmatch '\bRX\b'))) -or ($vram -gt 0 -and $vram -lt 1))
+        $gpus += [pscustomobject]@{ Name = $v.Name; Vendor = $vendor; VramGb = $vram; IsPci = $pci; Integrated = $integrated; Driver = $v.DriverVersion }
+    }
+    $primary = $gpus | Where-Object { $_.IsPci -and -not $_.Integrated } | Sort-Object VramGb -Descending | Select-Object -First 1
+    if (-not $primary) { $primary = $gpus | Where-Object { $_.IsPci } | Select-Object -First 1 }
+    $hybrid = (@($gpus | Where-Object { $_.IsPci }).Count -ge 2) -and [bool]($gpus | Where-Object { $_.IsPci -and -not $_.Integrated })
+
+    $battery = @(Get-CimInstance Win32_Battery -ErrorAction SilentlyContinue).Count -gt 0
+    $onAc = $true
+    if ($battery) { try { $onAc = [bool](Get-CimInstance -Namespace root\wmi -ClassName BatteryStatus -ErrorAction Stop | Select-Object -First 1).PowerOnline } catch { } }
+
+    $cur = [NexusNative]::Current()
+    $w = 0; $h = 0; $hz = 0; $maxHz = 0
+    if ($cur) { $w = $cur[0]; $h = $cur[1]; $hz = $cur[2]; $maxHz = [math]::Max($hz, [NexusNative]::MaxRefresh($w, $h)) }
+
+    $vramPrimary = 0
+    if ($primary -and -not $primary.Integrated) { $vramPrimary = $primary.VramGb }
+    $threads = [Environment]::ProcessorCount
+    $tier = 'MID'
+    if ($vramPrimary -lt 3.5 -or $ramGb -lt 7.5 -or $threads -lt 4) { $tier = 'LOW' }
+    elseif ($vramPrimary -ge 7.5 -and $ramGb -ge 15 -and $threads -ge 8) { $tier = 'HIGH' }
+
+    $ssd = $null
+    try {
+        $letter = $env:LOCALAPPDATA.Substring(0, 1)
+        $part = Get-Partition -DriveLetter $letter -ErrorAction Stop
+        $disk = Get-PhysicalDisk -ErrorAction Stop | Where-Object { $_.DeviceId -eq [string]$part.DiskNumber }
+        if ($disk) { $ssd = ($disk.MediaType -eq 'SSD') -or ($disk.BusType -eq 'NVMe') }
+    } catch { }
+
+    return [pscustomobject]@{
+        Cpu = ($cpu.Name -replace '\s+', ' ').Trim(); Threads = $threads; RamGb = $ramGb
+        Gpus = $gpus; Primary = $primary; VramGb = $vramPrimary; Hybrid = $hybrid
+        Laptop = $battery; OnAc = $onAc
+        Width = $w; Height = $h; Hz = $hz; MaxHz = $maxHz
+        Windows = "$($os.Caption) (build $($os.BuildNumber))"; Build = [int]$os.BuildNumber
+        Tier = $tier; Ssd = $ssd
+    }
+}
+
+# ------------------------------------------------------------------ value helpers
+function Same($a, $b) {
+    if ($null -eq $a -or $null -eq $b) { return ($null -eq $a -and $null -eq $b) }
+    $x = 0.0; $y = 0.0
+    if ([double]::TryParse([string]$a, [Globalization.NumberStyles]::Float, $Inv, [ref]$x) -and [double]::TryParse([string]$b, [Globalization.NumberStyles]::Float, $Inv, [ref]$y)) {
+        return ([math]::Abs($x - $y) -lt 0.0001)
+    }
+    return ([string]$a).Trim() -ieq ([string]$b).Trim()
+}
+function F([double]$v) { return $v.ToString('0.000000', $Inv) }
+
+# ------------------------------------------------------------------ setting definitions
+$GtaLabels = @{
+    'TextureQuality' = @{ '0' = 'Normal'; '1' = 'High'; '2' = 'Very High' }
+    'ShaderQuality' = @{ '0' = 'Normal'; '1' = 'High'; '2' = 'Very High' }
+    'ShadowQuality' = @{ '1' = 'Normal'; '2' = 'High'; '3' = 'Very High' }
+    'ReflectionQuality' = @{ '0' = 'Normal'; '1' = 'High'; '2' = 'Very High'; '3' = 'Ultra' }
+    'WaterQuality' = @{ '0' = 'Normal'; '1' = 'High'; '2' = 'Very High' }
+    'ParticleQuality' = @{ '0' = 'Normal'; '1' = 'High'; '2' = 'Very High' }
+    'GrassQuality' = @{ '0' = 'Normal'; '1' = 'High'; '2' = 'Very High'; '3' = 'Ultra' }
+    'SSAO' = @{ '0' = 'Off'; '1' = 'Normal'; '2' = 'High' }
+    'AnisotropicFiltering' = @{ '0' = 'Off'; '1' = 'x2'; '2' = 'x4'; '3' = 'x8'; '4' = 'x16' }
+    'MSAA' = @{ '0' = 'Off'; '2' = '2x'; '4' = '4x'; '8' = '8x' }
+    'ReflectionMSAA' = @{ '0' = 'Off'; '2' = '2x'; '4' = '4x'; '8' = '8x' }
+    'Tessellation' = @{ '0' = 'Off'; '1' = 'Normal'; '2' = 'High'; '3' = 'Very High' }
+    'PostFX' = @{ '0' = 'Normal'; '1' = 'High'; '2' = 'Very High'; '3' = 'Ultra' }
+    'Shadow_SoftShadows' = @{ '0' = 'Sharp'; '1' = 'Soft'; '2' = 'Softer'; '3' = 'Softest'; '4' = 'AMD CHS'; '5' = 'NVIDIA PCSS' }
+    'DX_Version' = @{ '0' = 'DX10'; '1' = 'DX10.1'; '2' = 'DX11' }
+    'Windowed' = @{ '0' = 'Fullscreen'; '1' = 'Windowed'; '2' = 'Borderless' }
+    'VSync' = @{ '0' = 'Off'; '1' = 'On'; '2' = 'Half' }
+    'configSource' = @{ 'SMC_AUTO' = 'Auto'; 'SMC_USER' = 'User' }
+}
+$VideoElements = @('Windowed', 'VSync', 'RefreshRate')
+
+function Get-GtaPreset([string]$mode, $hw) {
+    $v = $hw.VramGb
+    $texSafe = '0'; if ($v -ge 10) { $texSafe = '2' } elseif ($v -ge 5.5) { $texSafe = '1' }
+    $texBal = '0'; if ($v -ge 7.5) { $texBal = '2' } elseif ($v -ge 3.5) { $texBal = '1' }
+    $af = '4'; if ($hw.Tier -eq 'LOW') { $af = '2' }
+    $d = [ordered]@{
+        'configSource' = 'SMC_USER'; 'DX_Version' = '2'; 'TextureQuality' = $texSafe; 'ShaderQuality' = '0'; 'ShadowQuality' = '1'
+        'ReflectionQuality' = '0'; 'ReflectionMSAA' = '0'; 'WaterQuality' = '0'; 'ParticleQuality' = '0'; 'GrassQuality' = '0'
+        'SSAO' = '0'; 'AnisotropicFiltering' = $af; 'MSAA' = '0'; 'Tessellation' = '0'; 'PostFX' = '0'; 'Shadow_SoftShadows' = '0'
+        'FXAA_Enabled' = 'true'; 'TXAA_Enabled' = 'false'; 'UltraShadows_Enabled' = 'false'; 'Shadow_LongShadows' = 'false'
+        'Shadow_ParticleShadows' = 'false'; 'DoF' = 'false'; 'HdStreamingInFlight' = 'false'; 'MotionBlurStrength' = (F 0)
+        'LodScale' = (F 0); 'MaxLodScale' = (F 0); 'PedLodBias' = (F 0); 'VehicleLodBias' = (F 0); 'CityDensity' = (F 0)
+        'PedVarietyMultiplier' = (F 0); 'VehicleVarietyMultiplier' = (F 0); 'Windowed' = '0'; 'VSync' = '0'
+    }
+    if ($hw.MaxHz -gt 0) { $d['RefreshRate'] = [string]$hw.MaxHz }
+    switch ($mode) {
+        'MAXFPS' { if ($v -ge 5.5) { $d['TextureQuality'] = '1' } else { $d['TextureQuality'] = '0' } }
+        'SMOOTH' { $d['LodScale'] = (F 0.2) }
+        'COMPETITIVE' { $d['LodScale'] = (F 0.3); $d['FXAA_Enabled'] = 'false' }
+        'CROWD' {
+            # Crowded servers are CPU/streaming-bound: minimum draw distance + population, and textures low enough
+            # that dozens of custom cars/clothes fit in VRAM without streaming stalls. FXAA off for a sharp image.
+            if ($v -ge 10) { $d['TextureQuality'] = '1' } else { $d['TextureQuality'] = '0' }
+            $d['FXAA_Enabled'] = 'false'
+        }
+        'BALANCED' {
+            $s = ($hw.Tier -eq 'HIGH')
+            $d['TextureQuality'] = $texBal
+            foreach ($k in 'ShaderQuality', 'ReflectionQuality', 'GrassQuality', 'SSAO', 'Tessellation', 'PostFX', 'Shadow_SoftShadows') { if ($s) { $d[$k] = '1' } }
+            if ($s) { $d['ShadowQuality'] = '2' }
+            $d['WaterQuality'] = '1'; $d['ParticleQuality'] = '1'; $d['Shadow_ParticleShadows'] = 'true'
+            $d['LodScale'] = (F 0.6); $d['PedLodBias'] = (F 0.2); $d['VehicleLodBias'] = (F 0.2)
+            $d['CityDensity'] = (F 0.5); $d['PedVarietyMultiplier'] = (F 0.5); $d['VehicleVarietyMultiplier'] = (F 0.5)
+            $d.Remove('Windowed')
+        }
+    }
+    return $d
+}
+
+function New-Reg($id, $title, $hive, $sub, $name, $type, $value, $default, $why, [switch]$Admin) {
+    return [pscustomobject]@{ Id = $id; Title = $title; Kind = 'reg'; Hive = $hive; SubKey = $sub; Name = $name; Type = $type
+        Proposed = $value; Default = $default; Why = $why; Admin = [bool]$Admin; Element = $null; Section = $null }
+}
+
+function Get-Plan([string]$profile, [string]$mode, $hw) {
+    $plan = @()
+    $plan += New-Reg 'gamemode' 'Game Mode' 'HKCU' 'Software\Microsoft\GameBar' 'AutoGameModeEnabled' 'DWord' '1' '1' '\u0E43\u0E2B\u0E49 Windows \u0E08\u0E31\u0E14\u0E25\u0E33\u0E14\u0E31\u0E1A\u0E40\u0E01\u0E21\u0E01\u0E48\u0E2D\u0E19 \u0E41\u0E25\u0E30\u0E44\u0E21\u0E48\u0E43\u0E2B\u0E49 Windows Update \u0E15\u0E34\u0E14\u0E15\u0E31\u0E49\u0E07\u0E23\u0E30\u0E2B\u0E27\u0E48\u0E32\u0E07\u0E40\u0E25\u0E48\u0E19'
+    $plan += New-Reg 'gamedvr' 'Game DVR (\u0E2D\u0E31\u0E14\u0E27\u0E34\u0E14\u0E35\u0E42\u0E2D\u0E40\u0E1A\u0E37\u0E49\u0E2D\u0E07\u0E2B\u0E25\u0E31\u0E07)' 'HKCU' 'System\GameConfigStore' 'GameDVR_Enabled' 'DWord' '0' '1' '\u0E1B\u0E34\u0E14\u0E01\u0E32\u0E23\u0E2D\u0E31\u0E14\u0E27\u0E34\u0E14\u0E35\u0E42\u0E2D\u0E40\u0E01\u0E21\u0E40\u0E1A\u0E37\u0E49\u0E2D\u0E07\u0E2B\u0E25\u0E31\u0E07\u0E17\u0E35\u0E48\u0E01\u0E34\u0E19 CPU, GPU \u0E41\u0E25\u0E30 RAM'
+    $plan += New-Reg 'appcapture' 'App capture (Game Bar)' 'HKCU' 'Software\Microsoft\Windows\CurrentVersion\GameDVR' 'AppCaptureEnabled' 'DWord' '0' '1' '\u0E1B\u0E34\u0E14\u0E01\u0E32\u0E23\u0E08\u0E31\u0E1A\u0E20\u0E32\u0E1E\u0E40\u0E1A\u0E37\u0E49\u0E2D\u0E07\u0E2B\u0E25\u0E31\u0E07\u0E02\u0E2D\u0E07 Game Bar'
+    # Windows defaults that tweak packs often disable. Without them a 16 GB PC pages to disk instead of compressing in RAM.
+    $plan += [pscustomobject]@{ Id = 'sysmain'; Title = 'SysMain service'; Kind = 'svc'; Name = 'SysMain'; Proposed = 'Automatic'; Default = $null
+        Why = 'service \u0E17\u0E35\u0E48 Memory Compression \u0E15\u0E49\u0E2D\u0E07\u0E43\u0E0A\u0E49 (\u0E04\u0E48\u0E32\u0E40\u0E23\u0E34\u0E48\u0E21\u0E15\u0E49\u0E19\u0E02\u0E2D\u0E07 Windows \u0E04\u0E37\u0E2D\u0E40\u0E1B\u0E34\u0E14)'; Admin = $true }
+    $plan += [pscustomobject]@{ Id = 'memcomp'; Title = 'Memory Compression'; Kind = 'mmagent'; Proposed = 'true'; Default = $null
+        Why = '\u0E1A\u0E35\u0E1A\u0E2D\u0E31\u0E14\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E40\u0E01\u0E47\u0E1A\u0E44\u0E27\u0E49\u0E43\u0E19 RAM \u0E41\u0E17\u0E19\u0E01\u0E32\u0E23\u0E1E\u0E31\u0E01\u0E25\u0E07\u0E14\u0E34\u0E2A\u0E01\u0E4C \u0E0A\u0E48\u0E27\u0E22\u0E25\u0E14\u0E2D\u0E32\u0E01\u0E32\u0E23\u0E01\u0E23\u0E30\u0E15\u0E38\u0E01\u0E15\u0E2D\u0E19 RAM \u0E44\u0E21\u0E48\u0E1E\u0E2D (\u0E04\u0E48\u0E32\u0E40\u0E23\u0E34\u0E48\u0E21\u0E15\u0E49\u0E19\u0E02\u0E2D\u0E07 Windows)'; Admin = $true }
+    if ($hw.Hybrid) {
+        foreach ($exe in (Get-FiveMExes)) {
+            $plan += New-Reg ('gpupref:' + $exe) ('\u0E43\u0E0A\u0E49\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E08\u0E2D\u0E41\u0E22\u0E01: ' + (Split-Path $exe -Leaf)) 'HKCU' 'Software\Microsoft\DirectX\UserGpuPreferences' $exe 'String' 'GpuPreference=2;' $null '\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E19\u0E35\u0E49\u0E21\u0E35\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E08\u0E2D\u0E2D\u0E2D\u0E19\u0E1A\u0E2D\u0E23\u0E4C\u0E14\u0E14\u0E49\u0E27\u0E22 \u0E08\u0E36\u0E07\u0E1A\u0E31\u0E07\u0E04\u0E31\u0E1A\u0E43\u0E2B\u0E49 FiveM \u0E43\u0E0A\u0E49\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E08\u0E2D\u0E41\u0E22\u0E01'
+        }
+    }
+    if ($hw.MaxHz -gt $hw.Hz) {
+        $plan += [pscustomobject]@{ Id = 'refresh'; Title = 'Refresh rate \u0E08\u0E2D'; Kind = 'display'; Proposed = [string]$hw.MaxHz; Default = $null; Why = "\u0E08\u0E2D\u0E23\u0E2D\u0E07\u0E23\u0E31\u0E1A $($hw.MaxHz)Hz \u0E41\u0E15\u0E48\u0E15\u0E2D\u0E19\u0E19\u0E35\u0E49\u0E15\u0E31\u0E49\u0E07\u0E44\u0E27\u0E49 $($hw.Hz)Hz"; Admin = $false }
+    }
+    if ($profile -ne 'LOW' -or $mode -eq 'COMPETITIVE') {
+        $plan += [pscustomobject]@{ Id = 'mouse'; Title = 'Mouse acceleration'; Kind = 'mouse'; Proposed = '0,0,0'; Default = $null; Why = '\u0E43\u0E2B\u0E49\u0E40\u0E21\u0E32\u0E2A\u0E4C\u0E02\u0E22\u0E31\u0E1A 1:1 \u0E40\u0E25\u0E47\u0E07\u0E44\u0E14\u0E49\u0E2A\u0E21\u0E48\u0E33\u0E40\u0E2A\u0E21\u0E2D'; Admin = $false }
+    }
+    if ($profile -eq 'HIGH' -or $profile -eq 'MAX') {
+        $ult = ($profile -eq 'MAX' -and -not $hw.Laptop)
+        $pwWhy = '\u0E44\u0E21\u0E48\u0E43\u0E2B\u0E49 CPU \u0E25\u0E14\u0E04\u0E27\u0E32\u0E21\u0E40\u0E23\u0E47\u0E27\u0E23\u0E30\u0E2B\u0E27\u0E48\u0E32\u0E07\u0E40\u0E1F\u0E23\u0E21 (\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19\u0E40\u0E09\u0E1E\u0E32\u0E30\u0E15\u0E2D\u0E19\u0E17\u0E35\u0E48\u0E43\u0E0A\u0E49 plan \u0E21\u0E32\u0E15\u0E23\u0E10\u0E32\u0E19\u0E02\u0E2D\u0E07 Windows \u0E2D\u0E22\u0E39\u0E48)'
+        if ($ult) { $pwWhy = 'Ultimate Performance: CPU \u0E44\u0E21\u0E48\u0E25\u0E14\u0E04\u0E27\u0E32\u0E21\u0E40\u0E23\u0E47\u0E27\u0E40\u0E25\u0E22 \u0E25\u0E14 latency \u0E23\u0E30\u0E2B\u0E27\u0E48\u0E32\u0E07\u0E40\u0E1F\u0E23\u0E21 (\u0E04\u0E2D\u0E21\u0E15\u0E31\u0E49\u0E07\u0E42\u0E15\u0E4A\u0E30\u0E40\u0E17\u0E48\u0E32\u0E19\u0E31\u0E49\u0E19)' }
+        $plan += [pscustomobject]@{ Id = 'power'; Title = 'Power plan'; Kind = 'power'; Proposed = $null; Default = $null; Why = $pwWhy; Admin = $false; Ultimate = $ult }
+    }
+    if ($profile -eq 'MAX' -and $hw.Build -ge 19041 -and $hw.Primary -and $hw.Primary.Vendor -in @('NVIDIA', 'AMD')) {
+        $plan += New-Reg 'hags' 'HAGS (GPU scheduling)' 'HKLM' 'SYSTEM\CurrentControlSet\Control\GraphicsDrivers' 'HwSchMode' 'DWord' '2' '1' '\u0E1A\u0E32\u0E07\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E25\u0E14 latency \u0E44\u0E14\u0E49 \u0E1A\u0E32\u0E07\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E44\u0E21\u0E48\u0E15\u0E48\u0E32\u0E07 (\u0E21\u0E35\u0E1C\u0E25\u0E2B\u0E25\u0E31\u0E07\u0E23\u0E35\u0E2A\u0E15\u0E32\u0E23\u0E4C\u0E17)' -Admin
+    }
+    if ($profile -eq 'MAX') {
+        foreach ($exe in @(Get-FiveMExes | Where-Object { $_ -like '*GTAProcess.exe' })) {
+            # Value is computed in Build-Preview so existing compatibility flags on the exe are kept.
+            $plan += New-Reg ('fso:' + $exe) ('\u0E1B\u0E34\u0E14 Fullscreen Optimizations: ' + (Split-Path $exe -Leaf)) 'HKCU' 'Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers' $exe 'String' 'FSO' $null '\u0E43\u0E2B\u0E49\u0E40\u0E01\u0E21\u0E41\u0E2A\u0E14\u0E07\u0E20\u0E32\u0E1E\u0E41\u0E1A\u0E1A fullscreen \u0E08\u0E23\u0E34\u0E07 \u0E25\u0E14 input lag \u0E44\u0E14\u0E49\u0E43\u0E19\u0E1A\u0E32\u0E07\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07 (\u0E1A\u0E32\u0E07\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E44\u0E21\u0E48\u0E15\u0E48\u0E32\u0E07)'
+        }
+    }
+    if ($mode -ne 'NONE') {
+        $preset = Get-GtaPreset $mode $hw
+        foreach ($k in $preset.Keys) {
+            $section = 'graphics'
+            if ($k -eq 'configSource') { $section = '' } elseif ($VideoElements -contains $k) { $section = 'video' }
+            $plan += [pscustomobject]@{ Id = 'gta.' + $k; Title = 'GTA: ' + $k; Kind = 'xml'; Element = $k; Section = $section; Proposed = $preset[$k]; Default = $null; Why = ''; Admin = $false }
+        }
+    }
+    return $plan
+}
+
+# ------------------------------------------------------------------ read / write per kind
+function Resolve-RegTarget($s) {
+    if ($Sandbox) { return @{ Root = [Microsoft.Win32.Registry]::CurrentUser; Sub = 'Software\NexusFiveM.Tests\' + $s.Hive + '\' + $s.SubKey } }
+    if ($s.Hive -eq 'HKLM') { return @{ Root = [Microsoft.Win32.Registry]::LocalMachine; Sub = $s.SubKey } }
+    return @{ Root = [Microsoft.Win32.Registry]::CurrentUser; Sub = $s.SubKey }
+}
+
+function Get-PowerActive {
+    $out = (powercfg /getactivescheme) | Out-String
+    if ($out -match '([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})') { return $Matches[1].ToLower() }
+    return $null
+}
+$PlanBalanced = '381b4222-f694-41f0-9685-ff5bb260df2e'
+$PlanSaver = 'a1841308-3541-4fab-bc81-f71556f20b4a'
+$PlanHigh = '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c'
+
+function Read-Value($s) {
+    switch ($s.Kind) {
+        'reg' {
+            $t = Resolve-RegTarget $s
+            $k = $t.Root.OpenSubKey($t.Sub)
+            if (-not $k) { return $null }
+            try { $v = $k.GetValue($s.Name, $null) } finally { $k.Close() }
+            if ($null -eq $v) { return $null }
+            return [string]$v
+        }
+        'xml' {
+            if (-not (Test-Path $GtaXml)) { return $null }
+            $doc = New-Object Xml.XmlDocument
+            $doc.Load($GtaXml)
+            $node = $null
+            if ($s.Section -eq '') { $node = $doc.DocumentElement.SelectSingleNode($s.Element) } else { $node = $doc.DocumentElement.SelectSingleNode($s.Section + '/' + $s.Element) }
+            if (-not $node) { return $null }
+            if ($s.Element -eq 'configSource') { return $node.InnerText }
+            return $node.GetAttribute('value')
+        }
+        'mouse' { if ($Sandbox) { return $script:SandboxMouse } return [NexusNative]::GetMouse() }
+        'display' { if ($Sandbox) { return $script:SandboxHz } $c = [NexusNative]::Current(); if ($c) { return [string]$c[2] } return $null }
+        'power' { if ($Sandbox) { return $script:SandboxPower } return Get-PowerActive }
+        'svc' {
+            if ($Sandbox) { return $script:SandboxSvc }
+            $svc = Get-Service -Name $s.Name -ErrorAction SilentlyContinue
+            if (-not $svc) { return $null }
+            return [string]$svc.StartType
+        }
+        'mmagent' {
+            if ($Sandbox) { return $script:SandboxMC }
+            try { return ([string](Get-MMAgent -ErrorAction Stop).MemoryCompression).ToLower() } catch { return $null }
+        }
+    }
+}
+
+function Write-Value($s, $value) {
+    switch ($s.Kind) {
+        'reg' {
+            $t = Resolve-RegTarget $s
+            if ($null -eq $value) {
+                $k = $t.Root.OpenSubKey($t.Sub, $true)
+                if ($k) { try { $k.DeleteValue($s.Name, $false) } finally { $k.Close() } }
+                return
+            }
+            $k = $t.Root.CreateSubKey($t.Sub)
+            try {
+                if ($s.Type -eq 'DWord') { $k.SetValue($s.Name, [int]$value, [Microsoft.Win32.RegistryValueKind]::DWord) }
+                else { $k.SetValue($s.Name, [string]$value, [Microsoft.Win32.RegistryValueKind]::String) }
+            } finally { $k.Close() }
+        }
+        'xml' {
+            $doc = New-Object Xml.XmlDocument
+            $doc.PreserveWhitespace = $true
+            $doc.Load($GtaXml)
+            $root = $doc.DocumentElement
+            $parent = $root
+            if ($s.Section -ne '') {
+                $parent = $root.SelectSingleNode($s.Section)
+                if (-not $parent) { $parent = $doc.CreateElement($s.Section); [void]$root.AppendChild($parent) }
+            }
+            $node = $parent.SelectSingleNode($s.Element)
+            if ($null -eq $value) { if ($node) { [void]$parent.RemoveChild($node) } }
+            else {
+                if (-not $node) { $node = $doc.CreateElement($s.Element); [void]$parent.AppendChild($node) }
+                if ($s.Element -eq 'configSource') { $node.InnerText = $value } else { $node.SetAttribute('value', $value) }
+            }
+            $settings = New-Object Xml.XmlWriterSettings
+            $settings.Encoding = New-Object Text.UTF8Encoding($false)
+            $tmp = $GtaXml + '.nexus.tmp'
+            $w = [Xml.XmlWriter]::Create($tmp, $settings)
+            try { $doc.Save($w) } finally { $w.Close() }
+            Move-Item -LiteralPath $tmp -Destination $GtaXml -Force
+        }
+        'mouse' {
+            if ($null -eq $value) { return }
+            if ($Sandbox) { $script:SandboxMouse = $value; return }
+            $p = $value.Split(',')
+            if (-not [NexusNative]::SetMouse([int]$p[0], [int]$p[1], [int]$p[2])) { throw 'SystemParametersInfo failed' }
+        }
+        'display' {
+            if ($null -eq $value) { return }
+            if ($Sandbox) { $script:SandboxHz = $value; return }
+            $r = [NexusNative]::SetRefresh([int]$value)
+            if ($r -ne 0) { throw "\u0E08\u0E2D\u0E44\u0E21\u0E48\u0E23\u0E31\u0E1A\u0E04\u0E48\u0E32 $value Hz (code $r)" }
+        }
+        'power' {
+            if ($null -eq $value) { return }
+            if ($value -eq 'ULTIMATE') {
+                # Windows hides Ultimate Performance on most editions; duplicating its template makes it available.
+                if ($Sandbox) { $value = 'e9a42b02-d5df-448d-aa00-03f14749eb61' }
+                else {
+                    $o = (powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61) | Out-String
+                    if ($o -notmatch '([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})') { throw 'Windows \u0E23\u0E38\u0E48\u0E19\u0E19\u0E35\u0E49\u0E2A\u0E23\u0E49\u0E32\u0E07 Ultimate Performance \u0E44\u0E21\u0E48\u0E44\u0E14\u0E49' }
+                    $value = $Matches[1].ToLower()
+                }
+                $s.Proposed = $value
+            }
+            if ($Sandbox) { $script:SandboxPower = $value; return }
+            powercfg /setactive $value | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "powercfg /setactive \u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08" }
+        }
+        'svc' {
+            if ($null -eq $value) { return }
+            if ($Sandbox) { $script:SandboxSvc = $value; return }
+            Set-Service -Name $s.Name -StartupType $value
+            if ($value -ne 'Disabled') { Start-Service -Name $s.Name -ErrorAction SilentlyContinue }
+        }
+        'mmagent' {
+            if ($null -eq $value) { return }
+            if ($Sandbox) { $script:SandboxMC = $value; return }
+            if ($value -eq 'true') {
+                $svc = Get-Service SysMain
+                if ([string]$svc.StartType -eq 'Disabled') { throw 'SysMain \u0E22\u0E31\u0E07\u0E16\u0E39\u0E01\u0E1B\u0E34\u0E14\u0E2D\u0E22\u0E39\u0E48' }
+                if ($svc.Status -ne 'Running') { Start-Service SysMain }
+                Enable-MMAgent -MemoryCompression
+            } else { Disable-MMAgent -MemoryCompression }
+        }
+    }
+}
+
+function Describe($s, $v) {
+    if ($null -eq $v) {
+        if ($s.Default) { return '(\u0E04\u0E48\u0E32\u0E40\u0E23\u0E34\u0E48\u0E21\u0E15\u0E49\u0E19 ' + (Describe $s $s.Default) + ')' }
+        return '(\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E15\u0E31\u0E49\u0E07)'
+    }
+    switch ($s.Kind) {
+        'reg' {
+            if ($s.Id -eq 'hags') { if ($v -eq '2') { return 'On' } return 'Off' }
+            if ($s.Type -eq 'DWord') { if ($v -eq '1') { return 'On' } if ($v -eq '0') { return 'Off' } }
+            if ($v -like '*GpuPreference=2*') { return '\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E08\u0E2D\u0E41\u0E22\u0E01' }
+            if ($s.Id -like 'fso:*') { if ($v -match 'DISABLEDXMAXIMIZEDWINDOWEDMODE') { return '\u0E1B\u0E34\u0E14\u0E41\u0E25\u0E49\u0E27' } return "\u0E40\u0E1B\u0E34\u0E14 ($v)" }
+            return $v
+        }
+        'xml' {
+            if ($GtaLabels.ContainsKey($s.Element) -and $GtaLabels[$s.Element].ContainsKey([string]$v)) { return $GtaLabels[$s.Element][[string]$v] }
+            $d = 0.0
+            if ($s.Element -ne 'RefreshRate' -and [double]::TryParse($v, [Globalization.NumberStyles]::Float, $Inv, [ref]$d) -and $v.Contains('.')) { return ('{0:0}%' -f ($d * 100)) }
+            return $v
+        }
+        'mouse' { if ($v.EndsWith(',0')) { return 'Off (1:1)' } return 'On (acceleration)' }
+        'svc' { if ($v -eq 'Disabled') { return '\u0E1B\u0E34\u0E14 (Disabled)' } return "\u0E40\u0E1B\u0E34\u0E14 ($v)" }
+        'mmagent' { if ($v -eq 'true') { return 'On' } return 'Off' }
+        'display' { return "$v Hz" }
+        'power' {
+            if ($v -eq 'ULTIMATE') { return 'Ultimate Performance (\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E43\u0E2B\u0E21\u0E48)' }
+            if ($v -eq 'e9a42b02-d5df-448d-aa00-03f14749eb61') { return 'Ultimate Performance' }
+            $name = ((powercfg /list) | Out-String) -split "`n" | Where-Object { $_ -match $v } | ForEach-Object { if ($_ -match '\((.+?)\)') { $Matches[1] } } | Select-Object -First 1
+            if ($name) { return $name } return $v
+        }
+    }
+    return [string]$v
+}
+
+function Test-Support($s, $hw) {
+    if ($s.Admin -and -not $IsAdmin -and -not $Sandbox) { return '\u0E15\u0E49\u0E2D\u0E07\u0E40\u0E1B\u0E34\u0E14 PowerShell \u0E41\u0E1A\u0E1A Run as administrator' }
+    if ($s.Kind -eq 'xml') {
+        if (-not (Test-Path $GtaXml)) { return '\u0E44\u0E21\u0E48\u0E40\u0E08\u0E2D gta5_settings.xml (\u0E40\u0E1B\u0E34\u0E14 FiveM 1 \u0E04\u0E23\u0E31\u0E49\u0E07\u0E01\u0E48\u0E2D\u0E19)' }
+        if (Test-FiveMRunning) { return '\u0E1B\u0E34\u0E14 FiveM \u0E01\u0E48\u0E2D\u0E19 (\u0E40\u0E01\u0E21\u0E08\u0E30\u0E40\u0E02\u0E35\u0E22\u0E19\u0E17\u0E31\u0E1A\u0E44\u0E1F\u0E25\u0E4C\u0E15\u0E2D\u0E19\u0E1B\u0E34\u0E14)' }
+        if ((Get-Item $GtaXml).IsReadOnly) { return '\u0E44\u0E1F\u0E25\u0E4C gta5_settings.xml \u0E16\u0E39\u0E01\u0E15\u0E31\u0E49\u0E07\u0E40\u0E1B\u0E47\u0E19 Read-only' }
+    }
+    if ($s.Kind -eq 'power' -and $hw.Laptop -and -not $hw.OnAc) { return '\u0E43\u0E0A\u0E49\u0E41\u0E1A\u0E15\u0E2D\u0E22\u0E39\u0E48 \u0E40\u0E2A\u0E35\u0E22\u0E1A\u0E2A\u0E32\u0E22\u0E0A\u0E32\u0E23\u0E4C\u0E08\u0E01\u0E48\u0E2D\u0E19' }
+    if ($s.Kind -eq 'svc' -and -not $Sandbox -and -not (Get-Service -Name $s.Name -ErrorAction SilentlyContinue)) { return 'Windows \u0E23\u0E38\u0E48\u0E19\u0E19\u0E35\u0E49\u0E44\u0E21\u0E48\u0E21\u0E35 service \u0E19\u0E35\u0E49' }
+    if ($s.Kind -eq 'mmagent' -and -not $Sandbox -and -not (Get-Command Enable-MMAgent -ErrorAction SilentlyContinue)) { return 'Windows \u0E23\u0E38\u0E48\u0E19\u0E19\u0E35\u0E49\u0E44\u0E21\u0E48\u0E23\u0E2D\u0E07\u0E23\u0E31\u0E1A' }
+    if ($s.Kind -eq 'power' -and $null -eq $s.Proposed) { return '\u0E2D\u0E48\u0E32\u0E19 power plan \u0E44\u0E21\u0E48\u0E44\u0E14\u0E49' }
+    return $null
+}
+
+# ------------------------------------------------------------------ preview / apply / restore
+function Build-Preview($plan, $hw) {
+    $rows = @()
+    foreach ($s in $plan) {
+        $cur = $null
+        try { $cur = Read-Value $s } catch { $rows += [pscustomobject]@{ S = $s; Cur = $null; Status = 'ERROR'; Note = $_.Exception.Message }; continue }
+        if ($s.Kind -eq 'power') {
+            # Only stock Windows plans are replaced; custom/OEM performance plans are kept as they are.
+            $stock = ($cur -eq $PlanBalanced -or $cur -eq $PlanSaver -or ($s.Ultimate -and $cur -eq $PlanHigh))
+            if ($stock) {
+                $list = ''; if (-not $Sandbox) { $list = (powercfg /list) | Out-String }
+                if ($s.Ultimate) {
+                    $existing = $null
+                    foreach ($ln in ($list -split "`n")) { if ($ln -match '([0-9a-fA-F-]{36}).*\(Ultimate Performance\)') { $existing = $Matches[1].ToLower(); break } }
+                    if ($existing) { $s.Proposed = $existing } else { $s.Proposed = 'ULTIMATE' }
+                } else {
+                    $hasHigh = $list -match $PlanHigh
+                    if ($Sandbox) { $hasHigh = $true }
+                    if ($hasHigh) { $s.Proposed = $PlanHigh } else { $s.Proposed = $cur }
+                }
+            } else { $s.Proposed = $cur }
+        }
+        if ($s.Id -like 'fso:*') {
+            $flag = 'DISABLEDXMAXIMIZEDWINDOWEDMODE'
+            if ($null -eq $cur) { $s.Proposed = '~ ' + $flag } elseif ($cur -match $flag) { $s.Proposed = $cur } else { $s.Proposed = $cur.TrimEnd() + ' ' + $flag }
+        }
+        $cmpCur = $cur; if ($null -eq $cmpCur) { $cmpCur = $s.Default }
+        if (Same $cmpCur $s.Proposed) { $rows += [pscustomobject]@{ S = $s; Cur = $cur; Status = 'OK'; Note = '' }; continue }
+        $why = Test-Support $s $hw
+        if ($why) { $rows += [pscustomobject]@{ S = $s; Cur = $cur; Status = 'SKIP'; Note = $why }; continue }
+        $rows += [pscustomobject]@{ S = $s; Cur = $cur; Status = 'CHANGE'; Note = $s.Why }
+    }
+    return $rows
+}
+
+function Show-Preview($rows) {
+    $change = @($rows | Where-Object { $_.Status -eq 'CHANGE' })
+    $ok = @($rows | Where-Object { $_.Status -eq 'OK' })
+    $skip = @($rows | Where-Object { $_.Status -ne 'CHANGE' -and $_.Status -ne 'OK' })
+    Head ("\u0E08\u0E30\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19 {0} \u0E02\u0E49\u0E2D  |  \u0E14\u0E35\u0E2D\u0E22\u0E39\u0E48\u0E41\u0E25\u0E49\u0E27 {1} \u0E02\u0E49\u0E2D  |  \u0E02\u0E49\u0E32\u0E21 {2} \u0E02\u0E49\u0E2D" -f $change.Count, $ok.Count, $skip.Count)
+    foreach ($r in $change) {
+        Say ("  [\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19] {0}: {1}  ->  {2}" -f $r.S.Title, (Describe $r.S $r.Cur), (Describe $r.S $r.S.Proposed)) 'Green'
+        if ($r.Note) { Say ("            {0}" -f $r.Note) 'DarkGray' }
+    }
+    foreach ($r in $skip) { Say ("  [\u0E02\u0E49\u0E32\u0E21]    {0}: {1}" -f $r.S.Title, $r.Note) 'Yellow' }
+    if ($ok.Count -gt 0) { Say ("  [\u0E14\u0E35\u0E2D\u0E22\u0E39\u0E48\u0E41\u0E25\u0E49\u0E27] " + (($ok | ForEach-Object { $_.S.Title -replace '^GTA: ', '' }) -join ', ')) 'DarkGray' }
+}
+
+function Invoke-Apply($rows, [string]$label) {
+    $todo = @($rows | Where-Object { $_.Status -eq 'CHANGE' })
+    if ($todo.Count -eq 0) { Say '\u0E44\u0E21\u0E48\u0E21\u0E35\u0E2D\u0E30\u0E44\u0E23\u0E15\u0E49\u0E2D\u0E07\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19' 'Green'; return $null }
+    New-Item -ItemType Directory -Force -Path $BackupDir | Out-Null
+    $stamp = (Get-Date).ToString('yyyyMMdd-HHmmss', $Inv)
+    $file = Join-Path $BackupDir "backup-$stamp.json"
+    if ($todo | Where-Object { $_.S.Kind -eq 'xml' }) { Copy-Item $GtaXml (Join-Path $BackupDir "gta5_settings-$stamp.xml") }
+    $entries = New-Object System.Collections.ArrayList
+    $okCount = 0; $fail = 0
+    foreach ($r in $todo) {
+        $s = $r.S
+        $before = Read-Value $s
+        $entry = [pscustomobject]@{ Id = $s.Id; Title = $s.Title; Kind = $s.Kind; Hive = $s.Hive; SubKey = $s.SubKey; Name = $s.Name; Type = $s.Type
+            Element = $s.Element; Section = $s.Section; Before = $before; After = $s.Proposed; Applied = $false; Verified = $false; Error = $null }
+        [void]$entries.Add($entry)
+        ConvertTo-Json -InputObject @($entries) -Depth 4 | Set-Content -Path $file -Encoding UTF8   # old value saved before writing
+        try {
+            Write-Value $s $s.Proposed
+            $entry.Applied = $true
+            $rb = Read-Value $s
+            $entry.After = $s.Proposed   # Write-Value may resolve a placeholder (e.g. a newly created power plan id)
+            ConvertTo-Json -InputObject @($entries) -Depth 4 | Set-Content -Path $file -Encoding UTF8
+            $entry.Verified = (Same $rb $s.Proposed)
+            if ($entry.Verified) { $okCount++; Say ("  OK    {0}: {1}" -f $s.Title, (Describe $s $s.Proposed)) 'Green' }
+            else { $fail++; $entry.Error = "read-back = $rb"; Say ("  FAIL  {0}: \u0E2D\u0E48\u0E32\u0E19\u0E04\u0E48\u0E32\u0E01\u0E25\u0E31\u0E1A\u0E21\u0E32\u0E44\u0E14\u0E49 {1}" -f $s.Title, $rb) 'Red' }
+        } catch {
+            $fail++; $entry.Error = $_.Exception.Message
+            Say ("  FAIL  {0}: {1}" -f $s.Title, $_.Exception.Message) 'Red'
+        }
+        ConvertTo-Json -InputObject @($entries) -Depth 4 | Set-Content -Path $file -Encoding UTF8
+    }
+    Head ("\u0E40\u0E2A\u0E23\u0E47\u0E08: \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 {0} \u0E02\u0E49\u0E2D  \u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 {1} \u0E02\u0E49\u0E2D" -f $okCount, $fail)
+    Say ("  \u0E44\u0E1F\u0E25\u0E4C backup: $file") 'Cyan'
+    if ($todo | Where-Object { $_.S.Kind -eq 'xml' }) { Say '  \u0E04\u0E48\u0E32\u0E01\u0E23\u0E32\u0E1F\u0E34\u0E01\u0E08\u0E30\u0E21\u0E35\u0E1C\u0E25\u0E15\u0E2D\u0E19\u0E40\u0E1B\u0E34\u0E14 FiveM \u0E04\u0E23\u0E31\u0E49\u0E07\u0E15\u0E48\u0E2D\u0E44\u0E1B' 'Gray' }
+    if ($todo | Where-Object { $_.S.Id -eq 'hags' }) { Say '  HAGS \u0E08\u0E30\u0E21\u0E35\u0E1C\u0E25\u0E2B\u0E25\u0E31\u0E07\u0E23\u0E35\u0E2A\u0E15\u0E32\u0E23\u0E4C\u0E17\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07' 'Yellow' }
+    if ($todo | Where-Object { $_.S.Id -in @('memcomp', 'sysmain') }) { Say '  Memory Compression \u0E08\u0E30\u0E17\u0E33\u0E07\u0E32\u0E19\u0E40\u0E15\u0E47\u0E21\u0E17\u0E35\u0E48\u0E2B\u0E25\u0E31\u0E07\u0E23\u0E35\u0E2A\u0E15\u0E32\u0E23\u0E4C\u0E17\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07 1 \u0E04\u0E23\u0E31\u0E49\u0E07' 'Yellow' }
+    return $file
+}
+
+function Invoke-Restore([string]$file) {
+    $parsed = ConvertFrom-Json -InputObject (Get-Content $file -Raw -Encoding UTF8)  # not via pipeline: PS 5.1 would nest the array
+    $entries = @($parsed)
+    $ok = 0; $fail = 0
+    [array]::Reverse($entries)
+    foreach ($e in $entries) {
+        if (-not $e.Applied) { continue }
+        $s = [pscustomobject]@{ Id = $e.Id; Title = $e.Title; Kind = $e.Kind; Hive = $e.Hive; SubKey = $e.SubKey; Name = $e.Name; Type = $e.Type
+            Element = $e.Element; Section = $e.Section; Default = $null; Admin = ($e.Hive -eq 'HKLM' -or $e.Kind -in @('svc', 'mmagent')) }
+        if ($s.Kind -eq 'xml' -and (Test-FiveMRunning)) { $fail++; Say ("  \u0E02\u0E49\u0E32\u0E21  {0}: \u0E1B\u0E34\u0E14 FiveM \u0E01\u0E48\u0E2D\u0E19" -f $s.Title) 'Yellow'; continue }
+        if ($s.Admin -and -not $IsAdmin -and -not $Sandbox) { $fail++; Say ("  \u0E02\u0E49\u0E32\u0E21  {0}: \u0E15\u0E49\u0E2D\u0E07\u0E40\u0E1B\u0E34\u0E14\u0E41\u0E1A\u0E1A administrator" -f $s.Title) 'Yellow'; continue }
+        try {
+            Write-Value $s $e.Before
+            if (Same (Read-Value $s) $e.Before) { $ok++; Say ("  \u0E04\u0E37\u0E19\u0E04\u0E48\u0E32 {0}: {1}" -f $s.Title, (Describe $s $e.Before)) 'Green' }
+            else { $fail++; Say ("  FAIL  {0}: \u0E2D\u0E48\u0E32\u0E19\u0E04\u0E48\u0E32\u0E01\u0E25\u0E31\u0E1A\u0E21\u0E32\u0E44\u0E21\u0E48\u0E15\u0E23\u0E07" -f $s.Title) 'Red' }
+        } catch { $fail++; Say ("  FAIL  {0}: {1}" -f $s.Title, $_.Exception.Message) 'Red' }
+    }
+    if ($fail -eq 0) { Rename-Item -LiteralPath $file -NewName ([IO.Path]::GetFileNameWithoutExtension($file) + '.restored.json') }
+    Head ("\u0E01\u0E39\u0E49\u0E04\u0E37\u0E19\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 {0} \u0E02\u0E49\u0E2D  \u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08 {1} \u0E02\u0E49\u0E2D" -f $ok, $fail)
+}
+
+# ------------------------------------------------------------------ menu actions
+function Show-Scan($hw) {
+    Head '\u0E2A\u0E40\u0E1B\u0E04\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07'
+    Say ("  CPU      : {0} ({1} threads)" -f $hw.Cpu, $hw.Threads)
+    foreach ($g in $hw.Gpus) {
+        $tag = ''; if (-not $g.IsPci) { $tag = ' [virtual]' } elseif ($g.Integrated) { $tag = ' [onboard]' }
+        Say ("  GPU      : {0} {1} GB{2}" -f $g.Name, $g.VramGb, $tag)
+    }
+    Say ("  RAM      : {0} GB" -f $hw.RamGb)
+    Say ("  \u0E08\u0E2D       : {0}x{1} @ {2} Hz (\u0E2A\u0E39\u0E07\u0E2A\u0E38\u0E14 {3} Hz)" -f $hw.Width, $hw.Height, $hw.Hz, $hw.MaxHz)
+    Say ("  Windows  : {0}" -f $hw.Windows)
+    $ssdText = '\u0E44\u0E21\u0E48\u0E17\u0E23\u0E32\u0E1A'; if ($hw.Ssd -eq $true) { $ssdText = 'SSD' } elseif ($hw.Ssd -eq $false) { $ssdText = 'HDD' }
+    Say ("  \u0E14\u0E34\u0E2A\u0E01\u0E4C     : {0}   |  \u0E23\u0E30\u0E14\u0E31\u0E1A\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07: {1}" -f $ssdText, $hw.Tier) 'White'
+    $warn = @()
+    if ($hw.RamGb -lt 15) { $warn += "RAM \u0E41\u0E04\u0E48 $($hw.RamGb) GB \u0E1B\u0E34\u0E14 Chrome / Discord overlay / \u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21\u0E2D\u0E37\u0E48\u0E19\u0E01\u0E48\u0E2D\u0E19\u0E40\u0E25\u0E48\u0E19" }
+    elseif ($hw.RamGb -lt 24) { $warn += 'RAM 16GB \u0E1E\u0E2D\u0E40\u0E25\u0E48\u0E19\u0E44\u0E14\u0E49 \u0E41\u0E15\u0E48\u0E40\u0E0B\u0E34\u0E23\u0E4C\u0E1F\u0E17\u0E35\u0E48\u0E21\u0E35\u0E02\u0E2D\u0E07 custom \u0E40\u0E22\u0E2D\u0E30\u0E08\u0E30\u0E15\u0E36\u0E07 \u0E04\u0E27\u0E23\u0E1B\u0E34\u0E14\u0E40\u0E1A\u0E23\u0E32\u0E27\u0E4C\u0E40\u0E0B\u0E2D\u0E23\u0E4C\u0E23\u0E30\u0E2B\u0E27\u0E48\u0E32\u0E07\u0E40\u0E25\u0E48\u0E19' }
+    if ($hw.MaxHz -gt $hw.Hz) { $warn += "\u0E08\u0E2D\u0E23\u0E2D\u0E07\u0E23\u0E31\u0E1A $($hw.MaxHz)Hz \u0E41\u0E15\u0E48\u0E15\u0E31\u0E49\u0E07\u0E44\u0E27\u0E49\u0E41\u0E04\u0E48 $($hw.Hz)Hz" }
+    if ($hw.Hybrid) { $warn += '\u0E21\u0E35\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E08\u0E2D\u0E2D\u0E2D\u0E19\u0E1A\u0E2D\u0E23\u0E4C\u0E14\u0E14\u0E49\u0E27\u0E22 \u0E15\u0E49\u0E2D\u0E07\u0E1A\u0E31\u0E07\u0E04\u0E31\u0E1A\u0E43\u0E2B\u0E49 FiveM \u0E43\u0E0A\u0E49\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E08\u0E2D\u0E41\u0E22\u0E01 (\u0E21\u0E35\u0E43\u0E19\u0E17\u0E38\u0E01\u0E42\u0E1B\u0E23\u0E44\u0E1F\u0E25\u0E4C)' }
+    if ($hw.Ssd -eq $false) { $warn += 'FiveM \u0E2D\u0E22\u0E39\u0E48\u0E1A\u0E19 HDD \u0E08\u0E30\u0E01\u0E23\u0E30\u0E15\u0E38\u0E01\u0E15\u0E2D\u0E19\u0E42\u0E2B\u0E25\u0E14\u0E02\u0E2D\u0E07 \u0E04\u0E27\u0E23\u0E22\u0E49\u0E32\u0E22\u0E44\u0E1B SSD' }
+    if ($hw.Laptop -and -not $hw.OnAc) { $warn += '\u0E42\u0E19\u0E49\u0E15\u0E1A\u0E38\u0E4A\u0E01\u0E43\u0E0A\u0E49\u0E41\u0E1A\u0E15\u0E2D\u0E22\u0E39\u0E48 \u0E40\u0E2A\u0E35\u0E22\u0E1A\u0E0A\u0E32\u0E23\u0E4C\u0E08\u0E01\u0E48\u0E2D\u0E19\u0E40\u0E25\u0E48\u0E19' }
+    $os = Get-CimInstance Win32_OperatingSystem
+    $free = [math]::Round($os.FreePhysicalMemory / 1MB, 1)
+    if ($free -lt 2) { $warn += "\u0E15\u0E2D\u0E19\u0E19\u0E35\u0E49 RAM \u0E40\u0E2B\u0E25\u0E37\u0E2D\u0E27\u0E48\u0E32\u0E07\u0E41\u0E04\u0E48 $free GB" }
+    if ($warn.Count -gt 0) { Head '\u0E02\u0E49\u0E2D\u0E04\u0E27\u0E23\u0E23\u0E30\u0E27\u0E31\u0E07'; foreach ($w in $warn) { Say "  - $w" 'Yellow' } }
+    $rec = 'MEDIUM'; if ($hw.Tier -eq 'LOW') { $rec = 'LOW' } elseif ($hw.Tier -eq 'HIGH') { $rec = 'HIGH' }
+    Say ''
+    Say "  \u0E42\u0E1B\u0E23\u0E44\u0E1F\u0E25\u0E4C\u0E17\u0E35\u0E48\u0E41\u0E19\u0E30\u0E19\u0E33\u0E2A\u0E33\u0E2B\u0E23\u0E31\u0E1A\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E19\u0E35\u0E49: $rec" 'Green'
+    if (Test-FiveMRunning) { Say '  FiveM \u0E40\u0E1B\u0E34\u0E14\u0E2D\u0E22\u0E39\u0E48: \u0E04\u0E48\u0E32\u0E01\u0E23\u0E32\u0E1F\u0E34\u0E01\u0E08\u0E30\u0E1B\u0E23\u0E31\u0E1A\u0E44\u0E14\u0E49\u0E2B\u0E25\u0E31\u0E07\u0E1B\u0E34\u0E14\u0E40\u0E01\u0E21' 'Yellow' }
+}
+
+function Show-Apps {
+    Head '\u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21\u0E17\u0E35\u0E48\u0E43\u0E0A\u0E49 RAM / CPU \u0E40\u0E22\u0E2D\u0E30 (\u0E27\u0E31\u0E14 2 \u0E27\u0E34\u0E19\u0E32\u0E17\u0E35)'
+    $a = @{}; Get-Process | ForEach-Object { try { $a[$_.Id] = $_.TotalProcessorTime.TotalMilliseconds } catch { } }
+    Start-Sleep -Seconds 2
+    $cores = [Environment]::ProcessorCount
+    $groups = @{}
+    foreach ($p in Get-Process) {
+        $cpu = 0
+        try { if ($a.ContainsKey($p.Id)) { $cpu = ($p.TotalProcessorTime.TotalMilliseconds - $a[$p.Id]) / 2000 / $cores * 100 } } catch { }
+        if (-not $groups.ContainsKey($p.Name)) { $groups[$p.Name] = [pscustomobject]@{ Name = $p.Name; Count = 0; Cpu = 0.0; Mem = 0.0 } }
+        $g = $groups[$p.Name]; $g.Count++; $g.Cpu += [math]::Max(0, $cpu); $g.Mem += $p.WorkingSet64 / 1MB
+    }
+    $tips = @{ 'chrome' = '\u0E40\u0E1A\u0E23\u0E32\u0E27\u0E4C\u0E40\u0E0B\u0E2D\u0E23\u0E4C: \u0E1B\u0E34\u0E14\u0E23\u0E30\u0E2B\u0E27\u0E48\u0E32\u0E07\u0E40\u0E25\u0E48\u0E19'; 'msedge' = '\u0E40\u0E1A\u0E23\u0E32\u0E27\u0E4C\u0E40\u0E0B\u0E2D\u0E23\u0E4C: \u0E1B\u0E34\u0E14\u0E23\u0E30\u0E2B\u0E27\u0E48\u0E32\u0E07\u0E40\u0E25\u0E48\u0E19'; 'firefox' = '\u0E40\u0E1A\u0E23\u0E32\u0E27\u0E4C\u0E40\u0E0B\u0E2D\u0E23\u0E4C: \u0E1B\u0E34\u0E14\u0E23\u0E30\u0E2B\u0E27\u0E48\u0E32\u0E07\u0E40\u0E25\u0E48\u0E19'; 'opera' = '\u0E40\u0E1A\u0E23\u0E32\u0E27\u0E4C\u0E40\u0E0B\u0E2D\u0E23\u0E4C: \u0E1B\u0E34\u0E14\u0E23\u0E30\u0E2B\u0E27\u0E48\u0E32\u0E07\u0E40\u0E25\u0E48\u0E19'
+        'Discord' = '\u0E1B\u0E34\u0E14 overlay \u0E01\u0E31\u0E1A hardware acceleration \u0E43\u0E19 Discord'; 'Medal' = '\u0E2D\u0E31\u0E14\u0E04\u0E25\u0E34\u0E1B\u0E40\u0E1A\u0E37\u0E49\u0E2D\u0E07\u0E2B\u0E25\u0E31\u0E07: \u0E1B\u0E34\u0E14\u0E16\u0E49\u0E32\u0E44\u0E21\u0E48\u0E43\u0E0A\u0E49'; 'MedalEncoder' = '\u0E2D\u0E31\u0E14\u0E04\u0E25\u0E34\u0E1B\u0E40\u0E1A\u0E37\u0E49\u0E2D\u0E07\u0E2B\u0E25\u0E31\u0E07: \u0E1B\u0E34\u0E14\u0E16\u0E49\u0E32\u0E44\u0E21\u0E48\u0E43\u0E0A\u0E49'
+        'obs64' = '\u0E01\u0E34\u0E19 GPU encoder: \u0E1B\u0E34\u0E14\u0E16\u0E49\u0E32\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E2A\u0E15\u0E23\u0E35\u0E21'; 'EpicGamesLauncher' = '\u0E44\u0E21\u0E48\u0E08\u0E33\u0E40\u0E1B\u0E47\u0E19\u0E15\u0E48\u0E2D FiveM'; 'Overwolf' = 'overlay \u0E2D\u0E32\u0E08\u0E17\u0E33\u0E43\u0E2B\u0E49\u0E01\u0E23\u0E30\u0E15\u0E38\u0E01'
+        'iCUE' = '\u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21\u0E44\u0E1F RGB \u0E2D\u0E32\u0E08\u0E17\u0E33\u0E43\u0E2B\u0E49\u0E01\u0E23\u0E30\u0E15\u0E38\u0E01'; 'LightingService' = '\u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21\u0E44\u0E1F RGB \u0E2D\u0E32\u0E08\u0E17\u0E33\u0E43\u0E2B\u0E49\u0E01\u0E23\u0E30\u0E15\u0E38\u0E01'; 'wallpaper64' = '\u0E27\u0E2D\u0E25\u0E40\u0E1B\u0E40\u0E1B\u0E2D\u0E23\u0E4C\u0E40\u0E04\u0E25\u0E37\u0E48\u0E2D\u0E19\u0E44\u0E2B\u0E27\u0E01\u0E34\u0E19 GPU'; 'OneDrive' = '\u0E2B\u0E22\u0E38\u0E14 sync \u0E23\u0E30\u0E2B\u0E27\u0E48\u0E32\u0E07\u0E40\u0E25\u0E48\u0E19' }
+    $groups.Values | Where-Object { $_.Name -notin @('Idle', 'System', 'Memory Compression') } | Sort-Object { $_.Mem + $_.Cpu * 50 } -Descending | Select-Object -First 12 | ForEach-Object {
+        $tip = ''; if ($tips.ContainsKey($_.Name)) { $tip = '  <- ' + $tips[$_.Name] }
+        $color = 'Gray'; if ($tip) { $color = 'Yellow' }
+        Say ("  {0,-28} {1,6:0.0}% CPU {2,7:0} MB{3}" -f ($_.Name + ' x' + $_.Count), $_.Cpu, $_.Mem, $tip) $color
+    }
+    Say '  (\u0E2A\u0E04\u0E23\u0E34\u0E1B\u0E15\u0E4C\u0E19\u0E35\u0E49\u0E44\u0E21\u0E48\u0E1B\u0E34\u0E14\u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21\u0E43\u0E2B\u0E49 \u0E43\u0E2B\u0E49\u0E1B\u0E34\u0E14\u0E40\u0E2D\u0E07\u0E15\u0E32\u0E21\u0E17\u0E35\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23)' 'DarkGray'
+}
+
+function Invoke-Monitor([int]$seconds = 30) {
+    Head "\u0E27\u0E31\u0E14 $seconds \u0E27\u0E34\u0E19\u0E32\u0E17\u0E35 (\u0E40\u0E25\u0E48\u0E19\u0E40\u0E01\u0E21\u0E44\u0E1B\u0E14\u0E49\u0E27\u0E22\u0E23\u0E30\u0E2B\u0E27\u0E48\u0E32\u0E07\u0E27\u0E31\u0E14)"
+    Say '  \u0E2B\u0E21\u0E32\u0E22\u0E40\u0E2B\u0E15\u0E38: \u0E04\u0E48\u0E32 FPS \u0E15\u0E49\u0E2D\u0E07\u0E43\u0E0A\u0E49\u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21 PresentMon \u0E08\u0E36\u0E07\u0E44\u0E21\u0E48\u0E41\u0E2A\u0E14\u0E07\u0E15\u0E23\u0E07\u0E19\u0E35\u0E49 \u0E14\u0E39 FPS \u0E43\u0E19\u0E40\u0E01\u0E21\u0E14\u0E49\u0E27\u0E22\u0E04\u0E33\u0E2A\u0E31\u0E48\u0E07 F8 > cl_drawfps 1' 'DarkGray'
+    $smi = Get-Command nvidia-smi -ErrorAction SilentlyContinue
+    $hwMon = $hw
+    $cpuS = @(); $gpuS = @(); $vramS = @(); $tempS = @(); $freeS = @(); $gameS = @()
+    $cores = [Environment]::ProcessorCount
+    $lastGame = $null; $lastT = $null
+    for ($i = 1; $i -le $seconds; $i++) {
+        try { $cpuS += (Get-CimInstance Win32_PerfFormattedData_PerfOS_Processor -Filter "Name='_Total'").PercentProcessorTime } catch { }
+        try { $freeS += (Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory / 1MB } catch { }
+        $gotGpu = $false
+        if ($smi) {
+            try {
+                $line = (& nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total,temperature.gpu --format=csv,noheader,nounits | Select-Object -First 1)
+                $p = $line -split ',\s*'
+                if ($p.Count -ge 4) { $gpuS += [double]$p[0]; $vramS += [double]$p[1] / [double]$p[2] * 100; $tempS += [double]$p[3]; $gotGpu = $true }
+            } catch { }
+        }
+        if (-not $gotGpu) {
+            # AMD / Intel / any GPU: Windows GPU counters (Windows 10 1709+). Temperature is not available this way.
+            try {
+                $eng = Get-CimInstance Win32_PerfFormattedData_GPUPerformanceCounters_GPUEngine -ErrorAction Stop | Where-Object { $_.Name -like '*engtype_3D*' }
+                if ($eng) {
+                    $byAdapter = @{}
+                    foreach ($e in $eng) { $luid = ($e.Name -replace '^.*?(luid_[^_]+_[^_]+).*$', '$1'); $byAdapter[$luid] = [double]$byAdapter[$luid] + [double]$e.UtilizationPercentage }
+                    $gpuS += [math]::Min(100, ($byAdapter.Values | Measure-Object -Maximum).Maximum)
+                }
+                if ($hwMon.VramGb -gt 0) {
+                    $mem = Get-CimInstance Win32_PerfFormattedData_GPUPerformanceCounters_GPUAdapterMemory -ErrorAction Stop | Measure-Object DedicatedUsage -Maximum
+                    if ($mem.Maximum) { $vramS += [math]::Min(100, $mem.Maximum / 1GB / $hwMon.VramGb * 100) }
+                }
+            } catch { }
+        }
+        $g = Get-Process | Where-Object { $_.Name -like '*_GTAProcess' } | Select-Object -First 1
+        if ($g) {
+            try {
+                $now = $g.TotalProcessorTime.TotalMilliseconds; $t = Get-Date
+                if ($null -ne $lastGame) { $gameS += ($now - $lastGame) / ($t - $lastT).TotalMilliseconds / $cores * 100 }
+                $lastGame = $now; $lastT = $t
+            } catch { }
+        }
+        Write-Progress -Activity 'NEXUS monitor' -Status "$i / $seconds s" -PercentComplete ($i / $seconds * 100)
+        Start-Sleep -Milliseconds 700
+    }
+    Write-Progress -Activity 'NEXUS monitor' -Completed
+    function St($a, $fmt) { if ($a.Count -eq 0) { return 'N/A' } $m = $a | Measure-Object -Average -Maximum; return ("avg {0}  max {1}" -f ($m.Average.ToString($fmt)), ($m.Maximum.ToString($fmt))) }
+    Say ("  CPU \u0E23\u0E27\u0E21        : {0} %" -f (St $cpuS '0'))
+    Say ("  FiveM \u0E43\u0E0A\u0E49 CPU   : {0} %" -f (St $gameS '0.0'))
+    Say ("  GPU            : {0} %" -f (St $gpuS '0'))
+    Say ("  VRAM \u0E43\u0E0A\u0E49\u0E44\u0E1B      : {0} %" -f (St $vramS '0'))
+    Say ("  \u0E2D\u0E38\u0E13\u0E2B\u0E20\u0E39\u0E21\u0E34 GPU    : {0} C" -f (St $tempS '0'))
+    $minFree = 'N/A'; if ($freeS.Count) { $minFree = ($freeS | Measure-Object -Minimum).Minimum.ToString('0.0') }
+    Say ("  RAM \u0E27\u0E48\u0E32\u0E07\u0E15\u0E48\u0E33\u0E2A\u0E38\u0E14    : {0} GB" -f $minFree)
+    Head '\u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C'
+    $found = $false
+    $gpuAvg = 0; if ($gpuS.Count) { $gpuAvg = ($gpuS | Measure-Object -Average).Average }
+    if ($gpuS.Count -and $gpuAvg -ge 95) { Say '  \u0E01\u0E32\u0E23\u0E4C\u0E14\u0E08\u0E2D\u0E17\u0E33\u0E07\u0E32\u0E19\u0E40\u0E15\u0E47\u0E21 (GPU-bound): \u0E25\u0E14 Shadow / Grass / MSAA / Post FX' 'Yellow'; $found = $true }
+    if ($vramS.Count -and ($vramS | Measure-Object -Average).Average -ge 95) { Say '  VRAM \u0E40\u0E15\u0E47\u0E21: \u0E25\u0E14 Texture Quality \u0E25\u0E07 1 \u0E02\u0E31\u0E49\u0E19' 'Yellow'; $found = $true }
+    if ($freeS.Count -and ($freeS | Measure-Object -Minimum).Minimum -lt 1.5) { Say '  RAM \u0E44\u0E21\u0E48\u0E1E\u0E2D: Windows \u0E15\u0E49\u0E2D\u0E07\u0E2A\u0E25\u0E31\u0E1A\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E25\u0E07\u0E14\u0E34\u0E2A\u0E01\u0E4C \u0E17\u0E33\u0E43\u0E2B\u0E49\u0E01\u0E23\u0E30\u0E15\u0E38\u0E01 \u0E1B\u0E34\u0E14\u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21\u0E2D\u0E37\u0E48\u0E19 (\u0E40\u0E21\u0E19\u0E39 6)' 'Yellow'; $found = $true }
+    if ($gpuS.Count -and $gpuAvg -lt 80 -and $gameS.Count) { Say '  GPU \u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E40\u0E15\u0E47\u0E21: \u0E15\u0E31\u0E27\u0E17\u0E35\u0E48\u0E08\u0E33\u0E01\u0E31\u0E14\u0E40\u0E1F\u0E23\u0E21\u0E19\u0E48\u0E32\u0E08\u0E30\u0E40\u0E1B\u0E47\u0E19 CPU / \u0E2A\u0E04\u0E23\u0E34\u0E1B\u0E15\u0E4C\u0E02\u0E2D\u0E07\u0E40\u0E0B\u0E34\u0E23\u0E4C\u0E1F \u0E25\u0E14 Distance scaling / Population' 'Yellow'; $found = $true }
+    if ($gameS.Count -eq 0) { Say '  \u0E44\u0E21\u0E48\u0E40\u0E08\u0E2D FiveM \u0E23\u0E30\u0E2B\u0E27\u0E48\u0E32\u0E07\u0E27\u0E31\u0E14: \u0E1C\u0E25\u0E19\u0E35\u0E49\u0E40\u0E1B\u0E47\u0E19\u0E02\u0E2D\u0E07 desktop \u0E44\u0E21\u0E48\u0E43\u0E0A\u0E48\u0E02\u0E2D\u0E07\u0E40\u0E01\u0E21' 'Yellow'; $found = $true }
+    if (-not $found) { Say '  \u0E44\u0E21\u0E48\u0E21\u0E35\u0E08\u0E38\u0E14\u0E44\u0E2B\u0E19\u0E15\u0E31\u0E19\u0E0A\u0E31\u0E14\u0E40\u0E08\u0E19' 'Green' }
+}
+
+function Invoke-CacheClean {
+    if (-not (Test-Path $FiveMData)) { Say '\u0E44\u0E21\u0E48\u0E40\u0E08\u0E2D\u0E42\u0E1F\u0E25\u0E40\u0E14\u0E2D\u0E23\u0E4C FiveM' 'Yellow'; return }
+    if (Test-FiveMRunning) { Say '\u0E1B\u0E34\u0E14 FiveM \u0E43\u0E2B\u0E49\u0E2B\u0E21\u0E14\u0E01\u0E48\u0E2D\u0E19 (\u0E23\u0E27\u0E21 launcher)' 'Yellow'; return }
+    Head '\u0E25\u0E49\u0E32\u0E07 cache \u0E02\u0E2D\u0E07 FiveM'
+    Say '  \u0E01\u0E32\u0E23\u0E25\u0E49\u0E32\u0E07 cache \u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E40\u0E1E\u0E34\u0E48\u0E21 FPS \u0E41\u0E15\u0E48\u0E0A\u0E48\u0E27\u0E22\u0E41\u0E01\u0E49 texture \u0E2B\u0E32\u0E22 \u0E2B\u0E23\u0E37\u0E2D\u0E40\u0E01\u0E21\u0E40\u0E14\u0E49\u0E07\u0E15\u0E2D\u0E19\u0E40\u0E02\u0E49\u0E32\u0E40\u0E0B\u0E34\u0E23\u0E4C\u0E1F' 'Gray'
+    Say '  \u0E44\u0E1F\u0E25\u0E4C\u0E02\u0E2D\u0E07\u0E40\u0E0B\u0E34\u0E23\u0E4C\u0E1F\u0E08\u0E30\u0E16\u0E39\u0E01\u0E42\u0E2B\u0E25\u0E14\u0E43\u0E2B\u0E21\u0E48\u0E15\u0E2D\u0E19\u0E40\u0E02\u0E49\u0E32\u0E40\u0E0B\u0E34\u0E23\u0E4C\u0E1F\u0E04\u0E23\u0E31\u0E49\u0E07\u0E16\u0E31\u0E14\u0E44\u0E1B \u0E2A\u0E48\u0E27\u0E19 game-storage \u0E41\u0E25\u0E30 nui-storage \u0E08\u0E30\u0E44\u0E21\u0E48\u0E16\u0E39\u0E01\u0E25\u0E1A' 'Gray'
+    $targets = @()
+    $cache = Join-Path $FiveMData 'cache'
+    if (Test-Path $cache) { $targets += @(Get-ChildItem $cache -Force | Where-Object { $_.Name -notin @('subprocess', 'game') }) }
+    foreach ($n in 'server-cache', 'server-cache-priv') { $p = Join-Path $FiveMData $n; if (Test-Path $p) { $targets += @(Get-ChildItem $p -Force) } }
+    $size = 0; foreach ($t in $targets) { $size += (Get-ChildItem $t.FullName -Recurse -Force -File -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum; if (-not $t.PSIsContainer) { $size += $t.Length } }
+    Say ("  \u0E02\u0E19\u0E32\u0E14\u0E17\u0E35\u0E48\u0E08\u0E30\u0E25\u0E1A: {0:0.0} GB" -f ($size / 1GB)) 'White'
+    $ans = RH '  \u0E1E\u0E34\u0E21\u0E1E\u0E4C YES \u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E22\u0E37\u0E19\u0E22\u0E31\u0E19\u0E01\u0E32\u0E23\u0E25\u0E1A (\u0E25\u0E1A\u0E41\u0E25\u0E49\u0E27\u0E01\u0E39\u0E49\u0E04\u0E37\u0E19\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49)'
+    if ($ans -cne 'YES') { Say '  \u0E22\u0E01\u0E40\u0E25\u0E34\u0E01' 'Gray'; return }
+    $err = 0
+    foreach ($t in $targets) { try { Remove-Item -LiteralPath $t.FullName -Recurse -Force -Confirm:$false -ErrorAction Stop } catch { $err++ } }
+    Say ("  \u0E40\u0E2A\u0E23\u0E47\u0E08 (\u0E25\u0E1A\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49 {0} \u0E23\u0E32\u0E22\u0E01\u0E32\u0E23)" -f $err) 'Green'
+}
+
+function Select-Profile {
+    Head '\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E42\u0E1B\u0E23\u0E44\u0E1F\u0E25\u0E4C'
+    Say '  1 LOW     : \u0E04\u0E2D\u0E21\u0E2A\u0E40\u0E1B\u0E04\u0E15\u0E48\u0E33 \u0E40\u0E19\u0E49\u0E19\u0E25\u0E37\u0E48\u0E19 \u0E01\u0E23\u0E32\u0E1F\u0E34\u0E01 MAX FPS'
+    Say '  2 MEDIUM  : \u0E2A\u0E21\u0E14\u0E38\u0E25 \u0E01\u0E23\u0E32\u0E1F\u0E34\u0E01 BALANCED + \u0E1B\u0E34\u0E14 mouse acceleration'
+    Say '  3 HIGH    : \u0E40\u0E19\u0E49\u0E19\u0E40\u0E1F\u0E23\u0E21\u0E19\u0E34\u0E48\u0E07 \u0E01\u0E23\u0E32\u0E1F\u0E34\u0E01 MAX SMOOTH + power plan'
+    Say '  4 MAX     : \u0E17\u0E38\u0E01\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E17\u0E35\u0E48\u0E1B\u0E25\u0E2D\u0E14\u0E20\u0E31\u0E22 + HAGS \u0E01\u0E23\u0E32\u0E1F\u0E34\u0E01 COMPETITIVE (\u0E40\u0E2B\u0E47\u0E19\u0E28\u0E31\u0E15\u0E23\u0E39\u0E0A\u0E31\u0E14 \u0E44\u0E21\u0E48\u0E21\u0E35 blur)'
+    $p = Ask '  \u0E40\u0E25\u0E37\u0E2D\u0E01 1-4'
+    if ($AutoAction) { $p = '4' }
+    switch ($p) { '1' { $prof = 'LOW'; $mode = 'MAXFPS' } '2' { $prof = 'MEDIUM'; $mode = 'BALANCED' } '3' { $prof = 'HIGH'; $mode = 'SMOOTH' } '4' { $prof = 'MAX'; $mode = 'COMPETITIVE' } default { return $null } }
+    Say ''
+    Say '  \u0E04\u0E48\u0E32\u0E01\u0E23\u0E32\u0E1F\u0E34\u0E01\u0E43\u0E19\u0E40\u0E01\u0E21:  1 \u0E43\u0E0A\u0E49\u0E15\u0E32\u0E21\u0E42\u0E1B\u0E23\u0E44\u0E1F\u0E25\u0E4C   2 MAX FPS   3 MAX SMOOTH   4 COMPETITIVE   5 BALANCED   6 \u0E44\u0E21\u0E48\u0E41\u0E15\u0E30\u0E01\u0E23\u0E32\u0E1F\u0E34\u0E01'
+    $m = Ask '  \u0E40\u0E25\u0E37\u0E2D\u0E01 1-6 (\u0E01\u0E14 Enter = 1)'
+    switch ($m) { '2' { $mode = 'MAXFPS' } '3' { $mode = 'SMOOTH' } '4' { $mode = 'COMPETITIVE' } '5' { $mode = 'BALANCED' } '6' { $mode = 'NONE' } }
+    return @($prof, $mode)
+}
+
+# "Best" = the strongest setup that is safe for this hardware. Situational HAGS is left to the MAX profile.
+function Get-BestSelection($hw) {
+    switch ($hw.Tier) {
+        'LOW' { return @('LOW', 'MAXFPS', '\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E2A\u0E40\u0E1B\u0E04\u0E15\u0E48\u0E33: \u0E40\u0E19\u0E49\u0E19\u0E40\u0E1F\u0E23\u0E21\u0E2A\u0E39\u0E07\u0E2A\u0E38\u0E14 (LOW + MAX FPS)') }
+        'MID' { return @('HIGH', 'SMOOTH', '\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E23\u0E30\u0E14\u0E31\u0E1A\u0E01\u0E25\u0E32\u0E07: \u0E40\u0E19\u0E49\u0E19\u0E40\u0E1F\u0E23\u0E21\u0E19\u0E34\u0E48\u0E07 (HIGH + MAX SMOOTH)') }
+        default { return @('HIGH', 'COMPETITIVE', '\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E41\u0E23\u0E07: \u0E40\u0E1F\u0E23\u0E21\u0E19\u0E34\u0E48\u0E07\u0E41\u0E25\u0E30\u0E40\u0E2B\u0E47\u0E19\u0E28\u0E31\u0E15\u0E23\u0E39\u0E0A\u0E31\u0E14 (HIGH + COMPETITIVE)') }
+    }
+}
+
+function Invoke-Best {
+    $hw2 = Get-Hardware
+    $b = Get-BestSelection $hw2
+    Head ('\u0E1B\u0E23\u0E31\u0E1A\u0E14\u0E35\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14\u0E2D\u0E31\u0E15\u0E42\u0E19\u0E21\u0E31\u0E15\u0E34: ' + $b[2])
+    $rows = Build-Preview (Get-Plan $b[0] $b[1] $hw2) $hw2
+    Show-Preview $rows
+    if (@($rows | Where-Object { $_.Status -eq 'CHANGE' }).Count -eq 0) { Say '\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E19\u0E35\u0E49\u0E15\u0E31\u0E49\u0E07\u0E04\u0E48\u0E32\u0E14\u0E35\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14\u0E2D\u0E22\u0E39\u0E48\u0E41\u0E25\u0E49\u0E27' 'Green'; return }
+    if (@($rows | Where-Object { $_.Status -eq 'SKIP' -and $_.S.Kind -eq 'xml' }).Count -gt 0) { Say '\u0E16\u0E49\u0E32\u0E08\u0E30\u0E1B\u0E23\u0E31\u0E1A\u0E01\u0E23\u0E32\u0E1F\u0E34\u0E01\u0E14\u0E49\u0E27\u0E22 \u0E43\u0E2B\u0E49\u0E1B\u0E34\u0E14 FiveM \u0E41\u0E25\u0E49\u0E27\u0E01\u0E14\u0E02\u0E49\u0E2D\u0E19\u0E35\u0E49\u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07' 'Yellow' }
+    if ($AutoAction) { return }
+    $yes = RH '\u0E22\u0E37\u0E19\u0E22\u0E31\u0E19\u0E01\u0E32\u0E23\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19\u0E15\u0E32\u0E21\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E02\u0E49\u0E32\u0E07\u0E1A\u0E19? (y/n)'
+    if ($yes -eq 'y') { [void](Invoke-Apply $rows ('best/' + $b[0] + '/' + $b[1])) } else { Say '\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01 \u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19\u0E2D\u0E30\u0E44\u0E23' 'Gray' }
+}
+
+# Apps that are safe to close for a gaming session (never system processes, never Discord/Steam/FiveM).
+$CloseableApps = [ordered]@{
+    'chrome' = 'Chrome'; 'msedge' = 'Edge'; 'firefox' = 'Firefox'; 'opera' = 'Opera'; 'brave' = 'Brave'
+    'Medal' = 'Medal'; 'MedalEncoder' = 'Medal encoder'; 'Overwolf' = 'Overwolf'; 'EpicGamesLauncher' = 'Epic Games'
+    'EADesktop' = 'EA app'; 'Battle.net' = 'Battle.net'; 'wallpaper64' = 'Wallpaper Engine'; 'wallpaper32' = 'Wallpaper Engine'
+    'Spotify' = 'Spotify'; 'OneDrive' = 'OneDrive'
+}
+
+function Get-RamApps {
+    $found = @()
+    foreach ($name in $CloseableApps.Keys) {
+        $p = @(Get-Process -Name $name -ErrorAction SilentlyContinue)
+        if ($p.Count -gt 0) { $found += [pscustomobject]@{ Name = $name; Label = $CloseableApps[$name]; Count = $p.Count; Mb = [math]::Round((($p | Measure-Object WorkingSet64 -Sum).Sum) / 1MB) } }
+    }
+    return $found
+}
+
+function Show-RamApps($found) {
+    if ($found.Count -eq 0) { Say '  \u0E44\u0E21\u0E48\u0E21\u0E35\u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21\u0E41\u0E22\u0E48\u0E07 RAM \u0E17\u0E35\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E1B\u0E34\u0E14' 'Green'; return }
+    $total = ($found | Measure-Object Mb -Sum).Sum
+    Head ("\u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21\u0E17\u0E35\u0E48\u0E41\u0E22\u0E48\u0E07 RAM (\u0E23\u0E27\u0E21 {0} MB)" -f $total)
+    foreach ($a in $found) { Say ("  - {0}  {1} MB" -f $a.Label, $a.Mb) 'Yellow' }
+    Say '  \u0E16\u0E49\u0E32\u0E21\u0E35\u0E07\u0E32\u0E19\u0E17\u0E35\u0E48\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E40\u0E0B\u0E1F\u0E43\u0E19\u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21\u0E1E\u0E27\u0E01\u0E19\u0E35\u0E49 \u0E43\u0E2B\u0E49\u0E40\u0E0B\u0E1F\u0E01\u0E48\u0E2D\u0E19 (Chrome \u0E08\u0E30\u0E40\u0E1B\u0E34\u0E14\u0E41\u0E17\u0E47\u0E1A\u0E40\u0E14\u0E34\u0E21\u0E04\u0E37\u0E19\u0E43\u0E2B\u0E49\u0E15\u0E2D\u0E19\u0E40\u0E1B\u0E34\u0E14\u0E43\u0E2B\u0E21\u0E48)' 'DarkGray'
+}
+
+function Close-BackgroundApps([switch]$Confirmed) {
+    $found = @(Get-RamApps)
+    if (-not $Confirmed) {
+        Show-RamApps $found
+        if ($found.Count -eq 0 -or $AutoAction) { return }
+        $yes = RH '  \u0E1B\u0E34\u0E14\u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21\u0E1E\u0E27\u0E01\u0E19\u0E35\u0E49\u0E40\u0E25\u0E22\u0E44\u0E2B\u0E21? (y/n)'
+        if ($yes -ne 'y') { Say '  \u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E1B\u0E34\u0E14\u0E2D\u0E30\u0E44\u0E23' 'Gray'; return }
+    }
+    if ($found.Count -eq 0) { return }
+    if ($Sandbox) { Say ('  SANDBOX: \u0E08\u0E33\u0E25\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E1B\u0E34\u0E14 ' + (($found | ForEach-Object { $_.Label }) -join ', ')) 'Magenta'; return }
+    $before = (Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory / 1MB
+    foreach ($a in $found) { Get-Process -Name $a.Name -ErrorAction SilentlyContinue | ForEach-Object { try { $_.CloseMainWindow() | Out-Null } catch { } } }
+    Start-Sleep -Seconds 3
+    foreach ($a in $found) { Get-Process -Name $a.Name -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue }
+    Start-Sleep -Seconds 2
+    $after = (Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory / 1MB
+    Say ("  \u0E1B\u0E34\u0E14\u0E41\u0E25\u0E49\u0E27: RAM \u0E27\u0E48\u0E32\u0E07\u0E08\u0E32\u0E01 {0:0.0} GB \u0E40\u0E1B\u0E47\u0E19 {1:0.0} GB" -f $before, $after) 'Green'
+}
+
+function Invoke-War {
+    $hw2 = Get-Hardware
+    Head '\u0E42\u0E2B\u0E21\u0E14\u0E42\u0E2B\u0E14\u0E2A\u0E38\u0E14 (\u0E04\u0E19\u0E40\u0E22\u0E2D\u0E30 / \u0E44\u0E1F\u0E15\u0E4C)'
+    Say '  \u0E15\u0E2D\u0E19\u0E04\u0E19\u0E40\u0E22\u0E2D\u0E30 \u0E15\u0E31\u0E27\u0E17\u0E35\u0E48\u0E17\u0E33\u0E43\u0E2B\u0E49\u0E40\u0E1F\u0E23\u0E21\u0E15\u0E01\u0E04\u0E37\u0E2D CPU, RAM \u0E41\u0E25\u0E30\u0E2A\u0E04\u0E23\u0E34\u0E1B\u0E15\u0E4C\u0E02\u0E2D\u0E07\u0E40\u0E0B\u0E34\u0E23\u0E4C\u0E1F \u0E44\u0E21\u0E48\u0E43\u0E0A\u0E48\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E08\u0E2D \u0E42\u0E2B\u0E21\u0E14\u0E19\u0E35\u0E49\u0E08\u0E36\u0E07:' 'Gray'
+    Say '   - \u0E15\u0E31\u0E14\u0E23\u0E30\u0E22\u0E30\u0E01\u0E32\u0E23\u0E21\u0E2D\u0E07\u0E40\u0E2B\u0E47\u0E19\u0E27\u0E31\u0E15\u0E16\u0E38\u0E44\u0E01\u0E25\u0E46 \u0E41\u0E25\u0E30\u0E08\u0E33\u0E19\u0E27\u0E19\u0E04\u0E19/\u0E23\u0E16\u0E43\u0E19\u0E42\u0E25\u0E01\u0E25\u0E07\u0E43\u0E2B\u0E49\u0E15\u0E48\u0E33\u0E2A\u0E38\u0E14 (\u0E25\u0E14\u0E20\u0E32\u0E23\u0E30 CPU)' 'Gray'
+    Say '   - \u0E25\u0E14 Texture \u0E43\u0E2B\u0E49 VRAM \u0E40\u0E2B\u0E25\u0E37\u0E2D \u0E08\u0E30\u0E44\u0E14\u0E49\u0E44\u0E21\u0E48\u0E01\u0E23\u0E30\u0E15\u0E38\u0E01\u0E15\u0E2D\u0E19\u0E42\u0E2B\u0E25\u0E14\u0E23\u0E16\u0E2B\u0E23\u0E37\u0E2D\u0E0A\u0E38\u0E14\u0E02\u0E2D\u0E07\u0E04\u0E19\u0E2D\u0E37\u0E48\u0E19' 'Gray'
+    Say '   - \u0E44\u0E21\u0E48\u0E21\u0E35 blur / DoF / \u0E2B\u0E0D\u0E49\u0E32 \u0E40\u0E07\u0E32\u0E04\u0E21 \u0E20\u0E32\u0E1E\u0E0A\u0E31\u0E14 \u0E21\u0E2D\u0E07\u0E04\u0E19\u0E07\u0E48\u0E32\u0E22' 'Gray'
+    Say '   - \u0E40\u0E21\u0E32\u0E2A\u0E4C 1:1, Game Mode, power plan \u0E41\u0E23\u0E07\u0E2A\u0E38\u0E14 \u0E41\u0E25\u0E30\u0E1B\u0E34\u0E14\u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21\u0E41\u0E22\u0E48\u0E07 RAM' 'Gray'
+    Say '   - \u0E40\u0E1B\u0E34\u0E14 Memory Compression \u0E02\u0E2D\u0E07 Windows \u0E01\u0E25\u0E31\u0E1A\u0E21\u0E32 (\u0E25\u0E14\u0E01\u0E32\u0E23\u0E1E\u0E31\u0E01 RAM \u0E25\u0E07\u0E14\u0E34\u0E2A\u0E01\u0E4C \u0E0B\u0E36\u0E48\u0E07\u0E17\u0E33\u0E43\u0E2B\u0E49\u0E01\u0E23\u0E30\u0E15\u0E38\u0E01)' 'Gray'
+    Say '  (\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E41\u0E01\u0E49\u0E14\u0E32\u0E40\u0E21\u0E08\u0E2B\u0E23\u0E37\u0E2D hitbox \u0E40\u0E1E\u0E23\u0E32\u0E30\u0E19\u0E31\u0E48\u0E19\u0E04\u0E37\u0E2D\u0E42\u0E01\u0E07\u0E41\u0E25\u0E30\u0E42\u0E14\u0E19\u0E41\u0E1A\u0E19)' 'DarkGray'
+    Stop-FiveMPrompt
+    $rows = Build-Preview (Get-Plan 'HIGH' 'CROWD' $hw2) $hw2
+    Show-Preview $rows
+    $change = @($rows | Where-Object { $_.Status -eq 'CHANGE' }).Count
+    if (@($rows | Where-Object { $_.Status -eq 'SKIP' -and $_.S.Kind -eq 'xml' }).Count -gt 0) { Say '  \u0E04\u0E48\u0E32\u0E01\u0E23\u0E32\u0E1F\u0E34\u0E01\u0E1B\u0E23\u0E31\u0E1A\u0E44\u0E14\u0E49\u0E2B\u0E25\u0E31\u0E07\u0E1B\u0E34\u0E14 FiveM: \u0E1B\u0E34\u0E14\u0E40\u0E01\u0E21\u0E41\u0E25\u0E49\u0E27\u0E01\u0E14\u0E02\u0E49\u0E2D 8 \u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07' 'Yellow' }
+    if ($change -gt 0 -and -not $AutoAction) {
+        $yes = RH '\u0E22\u0E37\u0E19\u0E22\u0E31\u0E19\u0E01\u0E32\u0E23\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19\u0E15\u0E32\u0E21\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E02\u0E49\u0E32\u0E07\u0E1A\u0E19? (y/n)'
+        if ($yes -eq 'y') { [void](Invoke-Apply $rows 'war/HIGH/CROWD') } else { Say '\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19\u0E04\u0E48\u0E32' 'Gray' }
+    } elseif ($change -eq 0) { Say '  \u0E04\u0E48\u0E32\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14\u0E15\u0E31\u0E49\u0E07\u0E41\u0E1A\u0E1A\u0E42\u0E2B\u0E14\u0E2A\u0E38\u0E14\u0E2D\u0E22\u0E39\u0E48\u0E41\u0E25\u0E49\u0E27' 'Green' }
+    Close-BackgroundApps
+    Show-ManualTips $hw2
+}
+
+function Stop-FiveMPrompt {
+    if (-not (Test-FiveMRunning) -or $AutoAction) { return }
+    Say ''
+    Say '  FiveM \u0E40\u0E1B\u0E34\u0E14\u0E2D\u0E22\u0E39\u0E48: \u0E15\u0E49\u0E2D\u0E07\u0E1B\u0E34\u0E14\u0E40\u0E01\u0E21\u0E01\u0E48\u0E2D\u0E19\u0E16\u0E36\u0E07\u0E08\u0E30\u0E1B\u0E23\u0E31\u0E1A\u0E01\u0E23\u0E32\u0E1F\u0E34\u0E01\u0E44\u0E14\u0E49 (\u0E15\u0E2D\u0E19\u0E1B\u0E34\u0E14 \u0E40\u0E01\u0E21\u0E08\u0E30\u0E40\u0E02\u0E35\u0E22\u0E19\u0E17\u0E31\u0E1A\u0E44\u0E1F\u0E25\u0E4C settings)' 'Yellow'
+    $k = RH '  \u0E1B\u0E34\u0E14 FiveM \u0E43\u0E2B\u0E49\u0E40\u0E25\u0E22\u0E44\u0E2B\u0E21? \u0E16\u0E49\u0E32\u0E2D\u0E22\u0E39\u0E48\u0E43\u0E19\u0E40\u0E0B\u0E34\u0E23\u0E4C\u0E1F\u0E08\u0E30\u0E2B\u0E25\u0E38\u0E14\u0E2D\u0E2D\u0E01\u0E17\u0E31\u0E19\u0E17\u0E35 (y/n)'
+    if ($k -ne 'y') { Say '  \u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E1B\u0E34\u0E14 FiveM: \u0E04\u0E48\u0E32\u0E01\u0E23\u0E32\u0E1F\u0E34\u0E01\u0E08\u0E30\u0E16\u0E39\u0E01\u0E02\u0E49\u0E32\u0E21' 'Gray'; return }
+    Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Name -like 'FiveM*' } | Stop-Process -Force -ErrorAction SilentlyContinue
+    for ($i = 0; $i -lt 20 -and (Test-FiveMRunning); $i++) { Start-Sleep -Milliseconds 500 }
+    Start-Sleep -Seconds 1
+    if (Test-FiveMRunning) { Say '  \u0E22\u0E31\u0E07\u0E1B\u0E34\u0E14 FiveM \u0E44\u0E21\u0E48\u0E2B\u0E21\u0E14 \u0E08\u0E30\u0E1B\u0E23\u0E31\u0E1A\u0E40\u0E09\u0E1E\u0E32\u0E30\u0E04\u0E48\u0E32\u0E17\u0E35\u0E48\u0E44\u0E21\u0E48\u0E43\u0E0A\u0E48\u0E01\u0E23\u0E32\u0E1F\u0E34\u0E01' 'Yellow' } else { Say '  \u0E1B\u0E34\u0E14 FiveM \u0E41\u0E25\u0E49\u0E27' 'Green' }
+}
+
+# One confirmation for everything: settings + closing RAM-heavy apps.
+function Select-RunAllLevel($hw2) {
+    $rec = '3'; $recName = 'MAX'
+    if ($hw2.Tier -eq 'LOW') { $rec = '1'; $recName = 'LOW' } elseif ($hw2.Tier -eq 'MID') { $rec = '2'; $recName = 'MEDIUM' }
+    Head '\u0E40\u0E25\u0E37\u0E2D\u0E01\u0E23\u0E30\u0E14\u0E31\u0E1A RUN ALL'
+    Say '  1 LOW    : \u0E04\u0E2D\u0E21\u0E2A\u0E40\u0E1B\u0E04\u0E15\u0E48\u0E33 / \u0E42\u0E19\u0E49\u0E15\u0E1A\u0E38\u0E4A\u0E01  \u0E40\u0E1F\u0E23\u0E21\u0E2A\u0E39\u0E07\u0E2A\u0E38\u0E14 \u0E01\u0E23\u0E32\u0E1F\u0E34\u0E01\u0E15\u0E48\u0E33\u0E2A\u0E38\u0E14 (MAX FPS)'
+    Say '  2 MEDIUM : \u0E04\u0E2D\u0E21\u0E23\u0E30\u0E14\u0E31\u0E1A\u0E01\u0E25\u0E32\u0E07          \u0E20\u0E32\u0E1E\u0E01\u0E31\u0E1A\u0E40\u0E1F\u0E23\u0E21\u0E2A\u0E21\u0E14\u0E38\u0E25 (BALANCED) + \u0E40\u0E21\u0E32\u0E2A\u0E4C 1:1'
+    Say '  3 MAX    : \u0E42\u0E2B\u0E14\u0E2A\u0E38\u0E14                 \u0E04\u0E19\u0E40\u0E22\u0E2D\u0E30\u0E40\u0E1F\u0E23\u0E21\u0E44\u0E21\u0E48\u0E15\u0E01 \u0E20\u0E32\u0E1E\u0E0A\u0E31\u0E14 + power plan + HAGS (\u0E1A\u0E32\u0E07\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E44\u0E21\u0E48\u0E15\u0E48\u0E32\u0E07)'
+    Say ("  \u0E41\u0E19\u0E30\u0E19\u0E33\u0E2A\u0E33\u0E2B\u0E23\u0E31\u0E1A\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E19\u0E35\u0E49 ({0}): {1}  ->  \u0E01\u0E14 Enter = {1}" -f $hw2.Tier, $recName) 'Green'
+    $p = Ask '  \u0E40\u0E25\u0E37\u0E2D\u0E01 1-3'
+    if ($AutoAction -and $env:NEXUS_LEVEL) { $p = $env:NEXUS_LEVEL }
+    if ([string]::IsNullOrWhiteSpace($p) -or $p -notin @('1', '2', '3')) { $p = $rec }
+    if ($AutoAction -and -not $env:NEXUS_LEVEL) { $p = $rec }
+    switch ($p) {
+        '1' { return @('LOW', 'MAXFPS', 'LOW') }
+        '2' { return @('MEDIUM', 'BALANCED', 'MEDIUM') }
+        default { return @('MAX', 'CROWD', 'MAX') }
+    }
+}
+
+function Invoke-RunAll {
+    Head 'RUN ALL: \u0E17\u0E33\u0E17\u0E38\u0E01\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E43\u0E2B\u0E49\u0E25\u0E37\u0E48\u0E19\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14\u0E43\u0E19\u0E04\u0E23\u0E31\u0E49\u0E07\u0E40\u0E14\u0E35\u0E22\u0E27'
+    $hw2 = Get-Hardware
+    Show-Scan $hw2
+    $lvl = Select-RunAllLevel $hw2
+    Say ("  \u0E40\u0E25\u0E37\u0E2D\u0E01: {0}" -f $lvl[2]) 'Cyan'
+    Stop-FiveMPrompt
+    $rows = Build-Preview (Get-Plan $lvl[0] $lvl[1] $hw2) $hw2
+    Show-Preview $rows
+    $apps = @(Get-RamApps)
+    Show-RamApps $apps
+    $change = @($rows | Where-Object { $_.Status -eq 'CHANGE' }).Count
+    if ($change -eq 0 -and $apps.Count -eq 0) {
+        Say ''
+        Say '  \u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07\u0E19\u0E35\u0E49\u0E15\u0E31\u0E49\u0E07\u0E04\u0E48\u0E32\u0E41\u0E1A\u0E1A\u0E25\u0E37\u0E48\u0E19\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14\u0E2D\u0E22\u0E39\u0E48\u0E41\u0E25\u0E49\u0E27 \u0E44\u0E21\u0E48\u0E21\u0E35\u0E2D\u0E30\u0E44\u0E23\u0E15\u0E49\u0E2D\u0E07\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19' 'Green'
+        Show-ManualTips $hw2
+        return
+    }
+    Say ''
+    $yes = Ask ("\u0E17\u0E33\u0E17\u0E31\u0E49\u0E07\u0E2B\u0E21\u0E14\u0E40\u0E25\u0E22\u0E44\u0E2B\u0E21? \u0E1B\u0E23\u0E31\u0E1A\u0E04\u0E48\u0E32 {0} \u0E02\u0E49\u0E2D + \u0E1B\u0E34\u0E14\u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21 {1} \u0E15\u0E31\u0E27 (\u0E04\u0E48\u0E32\u0E40\u0E14\u0E34\u0E21\u0E2A\u0E33\u0E23\u0E2D\u0E07\u0E44\u0E27\u0E49 \u0E01\u0E39\u0E49\u0E04\u0E37\u0E19\u0E44\u0E14\u0E49\u0E17\u0E35\u0E48\u0E40\u0E21\u0E19\u0E39 4) (y/n)" -f $change, $apps.Count)
+    if ($yes -ne 'y') { Say '\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01 \u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19\u0E2D\u0E30\u0E44\u0E23' 'Gray'; return }
+    if ($change -gt 0) { [void](Invoke-Apply $rows ('runall/' + $lvl[2])) }
+    if ($apps.Count -gt 0) { Close-BackgroundApps -Confirmed }
+    Show-ManualTips $hw2
+    Head 'RUN ALL \u0E40\u0E2A\u0E23\u0E47\u0E08\u0E41\u0E25\u0E49\u0E27'
+    if (@($rows | Where-Object { $_.Status -eq 'SKIP' -and $_.S.Kind -eq 'xml' }).Count -gt 0) { Say '  \u0E04\u0E48\u0E32\u0E01\u0E23\u0E32\u0E1F\u0E34\u0E01\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E1B\u0E23\u0E31\u0E1A\u0E40\u0E1E\u0E23\u0E32\u0E30 FiveM \u0E40\u0E1B\u0E34\u0E14\u0E2D\u0E22\u0E39\u0E48: \u0E1B\u0E34\u0E14\u0E40\u0E01\u0E21\u0E41\u0E25\u0E49\u0E27\u0E23\u0E31\u0E19 RUN ALL \u0E2D\u0E35\u0E01\u0E04\u0E23\u0E31\u0E49\u0E07' 'Yellow' }
+    Say '  \u0E16\u0E49\u0E32\u0E21\u0E35\u0E01\u0E32\u0E23\u0E40\u0E1B\u0E34\u0E14 Memory Compression / HAGS \u0E43\u0E2B\u0E49\u0E23\u0E35\u0E2A\u0E15\u0E32\u0E23\u0E4C\u0E17\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07 1 \u0E04\u0E23\u0E31\u0E49\u0E07 \u0E41\u0E25\u0E49\u0E27\u0E40\u0E02\u0E49\u0E32\u0E40\u0E01\u0E21\u0E44\u0E14\u0E49\u0E40\u0E25\u0E22' 'Green'
+}
+
+function Show-ManualTips($hw2) {
+    Head '\u0E17\u0E33\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E2D\u0E07\u0E43\u0E19\u0E40\u0E01\u0E21\u0E41\u0E25\u0E30\u0E43\u0E19\u0E44\u0E14\u0E23\u0E40\u0E27\u0E2D\u0E23\u0E4C (\u0E2A\u0E04\u0E23\u0E34\u0E1B\u0E15\u0E4C\u0E15\u0E31\u0E49\u0E07\u0E43\u0E2B\u0E49\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49)'
+    $cap = [math]::Max(30, $hw2.MaxHz - 3)
+    $vendor = ''; if ($hw2.Primary) { $vendor = $hw2.Primary.Vendor }
+    switch ($vendor) {
+        'NVIDIA' {
+            Say ("  - NVIDIA Control Panel > Max Frame Rate = {0} : \u0E40\u0E1F\u0E23\u0E21\u0E19\u0E34\u0E48\u0E07\u0E01\u0E27\u0E48\u0E32\u0E1B\u0E25\u0E48\u0E2D\u0E22\u0E40\u0E1F\u0E23\u0E21\u0E41\u0E01\u0E27\u0E48\u0E07" -f $cap) 'Gray'
+            Say '  - NVIDIA Control Panel > Low Latency Mode = On, Power management = Prefer maximum performance' 'Gray'
+        }
+        'AMD' {
+            Say ("  - AMD Adrenalin > Gaming > Radeon Chill: \u0E15\u0E31\u0E49\u0E07\u0E04\u0E48\u0E32 max = {0} FPS \u0E40\u0E1E\u0E37\u0E48\u0E2D\u0E43\u0E2B\u0E49\u0E40\u0E1F\u0E23\u0E21\u0E19\u0E34\u0E48\u0E07 (\u0E2B\u0E23\u0E37\u0E2D\u0E43\u0E0A\u0E49 Frame Rate Target)" -f $cap) 'Gray'
+            Say '  - AMD Adrenalin > Radeon Anti-Lag = On, Radeon Boost = Off, FreeSync = On' 'Gray'
+        }
+        'Intel' {
+            Say '  - Intel Graphics Software / Arc Control > Low Latency = On, Adaptive Sync = On' 'Gray'
+            Say '  - \u0E01\u0E32\u0E23\u0E4C\u0E14\u0E08\u0E2D\u0E2D\u0E2D\u0E19\u0E1A\u0E2D\u0E23\u0E4C\u0E14: \u0E40\u0E2A\u0E35\u0E22\u0E1A\u0E2A\u0E32\u0E22\u0E0A\u0E32\u0E23\u0E4C\u0E08 (\u0E42\u0E19\u0E49\u0E15\u0E1A\u0E38\u0E4A\u0E01) \u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49 RAM \u0E41\u0E1A\u0E1A dual-channel \u0E08\u0E30\u0E40\u0E23\u0E47\u0E27\u0E02\u0E36\u0E49\u0E19\u0E21\u0E32\u0E01' 'Gray'
+        }
+        default { Say ("  - \u0E08\u0E33\u0E01\u0E31\u0E14\u0E40\u0E1F\u0E23\u0E21\u0E17\u0E35\u0E48 {0} FPS \u0E43\u0E19\u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21\u0E02\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E4C\u0E14\u0E08\u0E2D \u0E40\u0E1F\u0E23\u0E21\u0E08\u0E30\u0E19\u0E34\u0E48\u0E07\u0E01\u0E27\u0E48\u0E32" -f $cap) 'Gray' }
+    }
+    if ($hw2.Laptop) { Say '  - \u0E42\u0E19\u0E49\u0E15\u0E1A\u0E38\u0E4A\u0E01: \u0E40\u0E2A\u0E35\u0E22\u0E1A\u0E0A\u0E32\u0E23\u0E4C\u0E08\u0E15\u0E25\u0E2D\u0E14 \u0E41\u0E25\u0E30\u0E15\u0E31\u0E49\u0E07\u0E42\u0E2B\u0E21\u0E14 Performance/Turbo \u0E43\u0E19\u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21\u0E02\u0E2D\u0E07\u0E22\u0E35\u0E48\u0E2B\u0E49\u0E2D (Armoury Crate, Vantage \u0E2F\u0E25\u0E2F)' 'Gray' }
+    Say '  - \u0E43\u0E19\u0E40\u0E01\u0E21: Settings > Keyboard/Mouse > Mouse Input Method = Raw Input' 'Gray'
+    Say '  - \u0E43\u0E0A\u0E49\u0E2A\u0E32\u0E22 LAN \u0E41\u0E17\u0E19 WiFi: ping \u0E19\u0E34\u0E48\u0E07 \u0E22\u0E34\u0E07\u0E42\u0E14\u0E19\u0E41\u0E25\u0E49\u0E27\u0E40\u0E0B\u0E34\u0E23\u0E4C\u0E1F\u0E19\u0E31\u0E1A (hit registration)' 'Gray'
+    Say '  - \u0E01\u0E48\u0E2D\u0E19\u0E40\u0E25\u0E48\u0E19: \u0E1B\u0E34\u0E14 overlay \u0E02\u0E2D\u0E07 Discord \u0E41\u0E25\u0E30\u0E2D\u0E22\u0E48\u0E32\u0E40\u0E1B\u0E34\u0E14\u0E04\u0E25\u0E34\u0E1B/\u0E27\u0E34\u0E14\u0E35\u0E42\u0E2D\u0E17\u0E34\u0E49\u0E07\u0E44\u0E27\u0E49' 'Gray'
+}
+
+# Checks presets and plans against made-up PCs (read-only): every tier, GPU vendor and form factor.
+function Invoke-SelfTest {
+    $fake = @(
+        @{ N = 'Low-end laptop, Intel UHD, 8GB, battery'; Tier = 'LOW'; VramGb = 0; Ram = 8; Vendor = 'Intel'; Hybrid = $false; Laptop = $true; OnAc = $false; Hz = 60; MaxHz = 60; Build = 19045 }
+        @{ N = 'Gaming laptop, RTX 3050 4GB + iGPU, 16GB'; Tier = 'MID'; VramGb = 4; Ram = 16; Vendor = 'NVIDIA'; Hybrid = $true; Laptop = $true; OnAc = $true; Hz = 60; MaxHz = 144; Build = 22631 }
+        @{ N = 'Desktop, RX 6600 8GB, 16GB, Win11'; Tier = 'HIGH'; VramGb = 8; Ram = 16; Vendor = 'AMD'; Hybrid = $false; Laptop = $false; OnAc = $true; Hz = 165; MaxHz = 165; Build = 26100 }
+        @{ N = 'Desktop, RTX 4090 24GB, 64GB'; Tier = 'HIGH'; VramGb = 24; Ram = 64; Vendor = 'NVIDIA'; Hybrid = $false; Laptop = $false; OnAc = $true; Hz = 240; MaxHz = 240; Build = 19045 }
+        @{ N = 'Old Win10 1909, GTX 1050 2GB, 8GB'; Tier = 'LOW'; VramGb = 2; Ram = 8; Vendor = 'NVIDIA'; Hybrid = $false; Laptop = $false; OnAc = $true; Hz = 75; MaxHz = 75; Build = 18363 }
+    )
+    $fail = 0
+    foreach ($f in $fake) {
+        $gpu = [pscustomobject]@{ Name = 'fake'; Vendor = $f.Vendor; VramGb = $f.VramGb; IsPci = $true; Integrated = ($f.VramGb -eq 0); Driver = '' }
+        $hwF = [pscustomobject]@{ Cpu = 'fake'; Threads = 8; RamGb = $f.Ram; Gpus = @($gpu); Primary = $gpu; VramGb = $f.VramGb; Hybrid = $f.Hybrid
+            Laptop = $f.Laptop; OnAc = $f.OnAc; Width = 1920; Height = 1080; Hz = $f.Hz; MaxHz = $f.MaxHz; Windows = 'fake'; Build = $f.Build; Tier = $f.Tier; Ssd = $true }
+        $lvl = Get-BestSelection $hwF
+        foreach ($combo in @(@('LOW', 'MAXFPS'), @('MEDIUM', 'BALANCED'), @('MAX', 'CROWD'))) {
+            try {
+                $plan = @(Get-Plan $combo[0] $combo[1] $hwF)
+                $preset = Get-GtaPreset $combo[1] $hwF
+                $tex = $preset['TextureQuality']
+                $hags = [bool]($plan | Where-Object { $_.Id -eq 'hags' })
+                $refresh = [bool]($plan | Where-Object { $_.Id -eq 'refresh' })
+                $ok = $true
+                if ($f.VramGb -lt 5.5 -and $tex -ne '0' -and $combo[1] -ne 'BALANCED') { $ok = $false }
+                if ($hags -and ($f.Build -lt 19041 -or $f.Vendor -eq 'Intel')) { $ok = $false }
+                if ($refresh -ne ($f.MaxHz -gt $f.Hz)) { $ok = $false }
+                if ($f.Hz -gt 0 -and $preset['RefreshRate'] -ne [string]$f.MaxHz) { $ok = $false }
+                if (-not $ok) { $fail++ }
+                $mark = 'OK  '; $col = 'Green'; if (-not $ok) { $mark = 'FAIL'; $col = 'Red' }
+                Say ("  {0} {1,-44} {2,-6}/{3,-8} items={4,2} tex={5} hags={6} refresh={7}" -f $mark, $f.N, $combo[0], $combo[1], $plan.Count, $tex, $hags, $refresh) $col
+            } catch { $fail++; Say ("  FAIL {0} {1}: {2}" -f $f.N, $combo[0], $_.Exception.Message) 'Red' }
+        }
+        Say ("       best for this PC: {0} + {1}" -f $lvl[0], $lvl[1]) 'DarkGray'
+    }
+    Say ("SELFTEST: {0} failures" -f $fail) 'Cyan'
+}
+
+function Select-Backup {
+    $files = @(Get-ChildItem $BackupDir -Filter 'backup-*.json' -ErrorAction SilentlyContinue | Where-Object { $_.Name -notlike '*.restored.json' } | Sort-Object Name -Descending)
+    if ($files.Count -eq 0) { Say '\u0E44\u0E21\u0E48\u0E21\u0E35 backup \u0E17\u0E35\u0E48\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E01\u0E39\u0E49\u0E04\u0E37\u0E19' 'Yellow'; return $null }
+    Head 'Backup \u0E17\u0E35\u0E48\u0E21\u0E35 (\u0E25\u0E48\u0E32\u0E2A\u0E38\u0E14\u0E2D\u0E22\u0E39\u0E48\u0E1A\u0E19)'
+    for ($i = 0; $i -lt $files.Count; $i++) { Say ("  {0}  {1}" -f ($i + 1), $files[$i].Name) }
+    $n = Ask '  \u0E40\u0E25\u0E37\u0E2D\u0E01\u0E2B\u0E21\u0E32\u0E22\u0E40\u0E25\u0E02 (Enter = 1)'
+    $idx = 0
+    if ($n -match '^\d+$') { $idx = [int]$n - 1 }
+    if ($idx -lt 0 -or $idx -ge $files.Count) { $idx = 0 }
+    return $files[$idx].FullName
+}
+
+# ------------------------------------------------------------------ main
+Clear-Host
+Say "NEXUS FiveM Optimizer v$Version" 'Cyan'
+if (-not $IsAdmin) { Say '(\u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E40\u0E1B\u0E34\u0E14\u0E41\u0E1A\u0E1A administrator: \u0E02\u0E49\u0E2D\u0E17\u0E35\u0E48\u0E15\u0E49\u0E2D\u0E07\u0E43\u0E0A\u0E49\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E4C admin \u0E08\u0E30\u0E16\u0E39\u0E01\u0E02\u0E49\u0E32\u0E21)' 'DarkYellow' }
+if ($Sandbox) { Say "(SANDBOX: $Sandbox)" 'Magenta'; $script:SandboxMouse = '6,10,1'; $script:SandboxHz = '60'; $script:SandboxPower = $PlanBalanced; $script:SandboxSvc = 'Disabled'; $script:SandboxMC = 'false' }
+if ($PSVersionTable.PSVersion.Major -lt 5) { Say '\u0E15\u0E49\u0E2D\u0E07\u0E43\u0E0A\u0E49 PowerShell 5.1 \u0E02\u0E36\u0E49\u0E19\u0E44\u0E1B (\u0E21\u0E35\u0E43\u0E19 Windows 10/11 \u0E17\u0E38\u0E01\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07)' 'Red'; return }
+Say '\u0E01\u0E33\u0E25\u0E31\u0E07\u0E15\u0E23\u0E27\u0E08\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07...' 'DarkGray'
+$hw = Get-Hardware
+
+# Direct start:  $NexusRunAll=1; iwr -useb "<url>" | iex
+if ($NexusRunAll -and -not $AutoAction) {
+    try { Invoke-RunAll } catch { Say ('\u0E40\u0E01\u0E34\u0E14\u0E02\u0E49\u0E2D\u0E1C\u0E34\u0E14\u0E1E\u0E25\u0E32\u0E14: ' + $_.Exception.Message) 'Red' }
+    return
+}
+
+if ($AutoAction) {
+    switch ($AutoAction) {
+        'scan' { Show-Scan $hw }
+        'preview' { $plan = Get-Plan 'MAX' 'COMPETITIVE' $hw; Show-Preview (Build-Preview $plan $hw) }
+        'apply' { $plan = Get-Plan 'MAX' 'COMPETITIVE' $hw; $rows = Build-Preview $plan $hw; Show-Preview $rows; $f = Invoke-Apply $rows 'auto'; $global:NexusLastBackup = $f }
+        'restore' { $f = @(Get-ChildItem $BackupDir -Filter 'backup-*.json' | Where-Object { $_.Name -notlike '*.restored.json' } | Sort-Object Name -Descending)[0].FullName; Invoke-Restore $f }
+        'apps' { Show-Apps }
+        'best' { Invoke-Best }
+        'war' { Invoke-War }
+        'runall' { if (-not $Sandbox) { Say 'runall test mode needs NEXUS_SANDBOX' 'Red'; return }; Invoke-RunAll }
+        'selftest' { Invoke-SelfTest }
+        'warapply' { $hw2 = Get-Hardware; $rows = Build-Preview (Get-Plan 'HIGH' 'CROWD' $hw2) $hw2; Show-Preview $rows; [void](Invoke-Apply $rows 'war') }
+    }
+    return
+}
+
+while ($true) {
+    Say ''
+    Say '------------------------------------------------------------' 'DarkCyan'
+    Say '  1 \u0E2A\u0E41\u0E01\u0E19\u0E40\u0E04\u0E23\u0E37\u0E48\u0E2D\u0E07                 2 \u0E1B\u0E23\u0E31\u0E1A\u0E14\u0E35\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14\u0E2D\u0E31\u0E15\u0E42\u0E19\u0E21\u0E31\u0E15\u0E34 (\u0E41\u0E19\u0E30\u0E19\u0E33)' 'White'
+    Say '  3 \u0E40\u0E25\u0E37\u0E2D\u0E01\u0E42\u0E1B\u0E23\u0E44\u0E1F\u0E25\u0E4C\u0E40\u0E2D\u0E07             4 \u0E01\u0E39\u0E49\u0E04\u0E37\u0E19\u0E04\u0E48\u0E32\u0E40\u0E14\u0E34\u0E21' 'White'
+    Say '  5 \u0E27\u0E31\u0E14\u0E1C\u0E25 30 \u0E27\u0E34                 6 \u0E25\u0E49\u0E32\u0E07 cache FiveM' 'White'
+    Say '  7 \u0E14\u0E39\u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21\u0E01\u0E34\u0E19 RAM            8 \u0E42\u0E2B\u0E21\u0E14\u0E42\u0E2B\u0E14\u0E2A\u0E38\u0E14 (\u0E04\u0E19\u0E40\u0E22\u0E2D\u0E30 / \u0E44\u0E1F\u0E15\u0E4C)' 'White'
+    Say '  0 \u0E2D\u0E2D\u0E01' 'White'
+    Say '  9 RUN ALL (\u0E17\u0E33\u0E17\u0E38\u0E01\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E43\u0E19\u0E04\u0E23\u0E31\u0E49\u0E07\u0E40\u0E14\u0E35\u0E22\u0E27 \u0E40\u0E25\u0E37\u0E2D\u0E01 LOW / MEDIUM / MAX)' 'Green'
+    Say '  >>> \u0E01\u0E14 Enter \u0E40\u0E09\u0E22\u0E46 = RUN ALL <<<' 'Green'
+    $c = RH '\u0E40\u0E25\u0E37\u0E2D\u0E01'
+    if ([string]::IsNullOrWhiteSpace($c)) { $c = '9' }
+    try {
+        switch ($c) {
+            '1' { Show-Scan $hw }
+            '2' { Invoke-Best; $hw = Get-Hardware }
+            '3' {
+                $sel = Select-Profile
+                if ($sel) {
+                    $hw = Get-Hardware
+                    $rows = Build-Preview (Get-Plan $sel[0] $sel[1] $hw) $hw
+                    Show-Preview $rows
+                    if (@($rows | Where-Object { $_.Status -eq 'CHANGE' }).Count -gt 0) {
+                        $yes = RH '\u0E22\u0E37\u0E19\u0E22\u0E31\u0E19\u0E01\u0E32\u0E23\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19\u0E15\u0E32\u0E21\u0E23\u0E32\u0E22\u0E01\u0E32\u0E23\u0E02\u0E49\u0E32\u0E07\u0E1A\u0E19? (y/n)'
+                        if ($yes -eq 'y') { [void](Invoke-Apply $rows ($sel -join '/')); $hw = Get-Hardware } else { Say '\u0E22\u0E01\u0E40\u0E25\u0E34\u0E01 \u0E44\u0E21\u0E48\u0E44\u0E14\u0E49\u0E40\u0E1B\u0E25\u0E35\u0E48\u0E22\u0E19\u0E2D\u0E30\u0E44\u0E23' 'Gray' }
+                    }
+                }
+            }
+            '4' { $f = Select-Backup; if ($f) { $yes = RH '\u0E01\u0E39\u0E49\u0E04\u0E37\u0E19\u0E04\u0E48\u0E32\u0E08\u0E32\u0E01 backup \u0E19\u0E35\u0E49? (y/n)'; if ($yes -eq 'y') { Invoke-Restore $f; $hw = Get-Hardware } } }
+            '5' { Invoke-Monitor 30 }
+            '6' { Invoke-CacheClean }
+            '7' { Show-Apps }
+            '8' { Invoke-War; $hw = Get-Hardware }
+            '9' { Invoke-RunAll; $hw = Get-Hardware }
+            '0' { Say '\u0E1B\u0E34\u0E14\u0E42\u0E1B\u0E23\u0E41\u0E01\u0E23\u0E21' 'Gray'; return }
+        }
+    } catch {
+        Say ('\u0E40\u0E01\u0E34\u0E14\u0E02\u0E49\u0E2D\u0E1C\u0E34\u0E14\u0E1E\u0E25\u0E32\u0E14: ' + $_.Exception.Message) 'Red'
+    }
+}
+}
